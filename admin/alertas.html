@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alertas - Admin ElderCare</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Enlace al CSS COMPARTIDO (Subimos 2 niveles desde /admin) -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body class="app-layout">
+
+    <!-- SIDEBAR ADMINISTRATIVO -->
+    <aside class="sidebar" id="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="logo-title">ELDERCARE</div>
+                <div class="logo-subtitle">PANEL ADMINISTRATIVO</div>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <!-- Apunta al dashboard admin (misma carpeta) -->
+                    <a href="admin-dashboard.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <!-- Apunta a pacientes admin (misma carpeta) -->
+                    <a href="pacientes.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+                        Pacientes
+                    </a>
+                </li>
+                <!-- ESTE ES EL ITEM ACTIVO -->
+                <li class="nav-item">
+                    <a href="alertas.html" class="nav-link active">
+                        <span class="nav-icon"><i class="fa-solid fa-bell"></i></span>
+                        Alertas
+                        <span class="badge-alert">8</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="usuarios.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-user-gear"></i></span>
+                        Gestión de Usuarios
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="iot.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-map-location-dot"></i></span>
+                        Mapa de Monitoreo IoT
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="reportes.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-file-medical-alt"></i></span>
+                        Reportes Clínicos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="auditoria.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+                        Log de Auditoría
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="user-profile">
+            <img src="https://picsum.photos/seed/admin/100/100" alt="Admin" class="avatar">
+            <div class="user-info">
+                <h4>Admin Sistema</h4>
+                <p>Super Usuario</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT (Idéntico al del médico) -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="top-header">
+            <button class="icon-btn" id="menu-toggle" style="margin-right: 15px; display: none;">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <h1 class="page-title">Alertas del Sistema</h1>
+            
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" class="search-input" placeholder="Buscar alerta por paciente o tipo...">
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-btn" title="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+                <button class="icon-btn" title="Notifications">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+                <div class="date-badge">Dec 14, 2023</div>
+            </div>
+        </header>
+
+        <!-- Alerts Content -->
+        <div class="alerts-container">
+            
+            <!-- Resumen de Sesiones (Stats) -->
+            <div class="stats-grid">
+                <div class="card summary-card">
+                    <div class="card-header">
+                        <span class="card-title">Total Hoy</span>
+                        <i class="fa-solid fa-bell card-icon"></i>
+                    </div>
+                    <div class="card-value">24</div>
+                    <div class="card-indicator text-gray">
+                        <i class="fa-solid fa-minus"></i> Igual que ayer
+                    </div>
+                </div>
+
+                <div class="card summary-card critical-alert">
+                    <div class="card-header">
+                        <span class="card-title">Críticas</span>
+                        <i class="fa-solid fa-circle-exclamation card-icon text-red"></i>
+                    </div>
+                    <div class="card-value text-red">3</div>
+                    <div class="card-indicator text-red">
+                        <i class="fa-solid fa-arrow-trend-up"></i> Requieren atención
+                    </div>
+                </div>
+
+                <div class="card summary-card" style="border-left: 4px solid var(--warning);">
+                    <div class="card-header">
+                        <span class="card-title">Moderadas</span>
+                        <i class="fa-solid fa-triangle-exclamation card-icon" style="color: var(--warning);"></i>
+                    </div>
+                    <div class="card-value" style="color: var(--warning);">8</div>
+                    <div class="card-indicator text-gray">
+                        <i class="fa-solid fa-clock"></i> En monitoreo
+                    </div>
+                </div>
+
+                <div class="card summary-card" style="border-left: 4px solid var(--success);">
+                    <div class="card-header">
+                        <span class="card-title">Resueltas</span>
+                        <i class="fa-solid fa-circle-check card-icon text-green"></i>
+                    </div>
+                    <div class="card-value text-green">45</div>
+                    <div class="card-indicator text-green">
+                        <i class="fa-solid fa-check"></i> Atendidas
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Layout: Table & Chart -->
+            <div class="alerts-main-grid">
+                
+                <!-- Recent Alerts List (Left) -->
+                <div class="card section-alerts-list">
+                    <div class="section-header">
+                        <h3 class="section-title">Alertas Activas (Global)</h3>
+                        <a href="#" class="table-header-link">Ver Histórico</a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Paciente</th>
+                                    <th>Tipo de Alerta</th>
+                                    <th>Hora</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="patient-cell">
+                                            <img src="https://picsum.photos/seed/robert/30/30" class="avatar" alt="Robert">
+                                            Robert Miller
+                                        </div>
+                                    </td>
+                                    <td><span class="text-red"><i class="fa-solid fa-person-falling"></i> Caída Detectada</span></td>
+                                    <td>Hace 5 min</td>
+                                    <td><span class="risk-badge risk-high">CRÍTICA</span></td>
+                                    <td>
+                                        <button class="action-btn" onclick="showToast('Ver paciente Robert...')">Ver</button>
+                                        <button class="action-btn" onclick="showToast('Alerta marcada como resuelta')"><i class="fa-solid fa-check"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="patient-cell">
+                                            <img src="https://picsum.photos/seed/lucille/30/30" class="avatar" alt="Lucille">
+                                            Lucille Vance
+                                        </div>
+                                    </td>
+                                    <td><span style="color: var(--warning);"><i class="fa-solid fa-heart-pulse"></i> Ritmo Cardíaco Alto</span></td>
+                                    <td>Hace 20 min</td>
+                                    <td><span class="risk-badge risk-moderate">MODERADA</span></td>
+                                    <td>
+                                        <button class="action-btn" onclick="showToast('Ver paciente Lucille...')">Ver</button>
+                                        <button class="action-btn" onclick="showToast('Alerta marcada como resuelta')"><i class="fa-solid fa-check"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="patient-cell">
+                                            <img src="https://picsum.photos/seed/george/30/30" class="avatar" alt="George">
+                                            George Bennett
+                                        </div>
+                                    </td>
+                                    <td><span style="color: var(--text-secondary);"><i class="fa-solid fa-door-open"></i> Salida de Zona</span></td>
+                                    <td>Hace 45 min</td>
+                                    <td><span class="risk-badge risk-low">REVISADA</span></td>
+                                    <td>
+                                        <button class="action-btn" onclick="showToast('Ver paciente George...')">Ver</button>
+                                        <button class="action-btn" onclick="showToast('Alerta marcada como resuelta')"><i class="fa-solid fa-check"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Alert Trend Chart (Right) -->
+                <div class="card section-chart-trend">
+                    <div class="section-header">
+                        <div>
+                            <h3 class="section-title">Tendencia de Alertas</h3>
+                            <p class="section-subtitle">Últimos 7 días</p>
+                        </div>
+                        <select class="chart-select">
+                            <option>Semana Actual</option>
+                            <option>Semana Pasada</option>
+                        </select>
+                    </div>
+
+                    <!-- Gráfica de Barras Simple CSS -->
+                    <div class="bar-chart-container">
+                        <div class="bar-group">
+                            <div class="bar" style="height: 40%; background-color: var(--success);"></div>
+                            <span class="bar-label">Lun</span>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" style="height: 60%; background-color: var(--success);"></div>
+                            <span class="bar-label">Mar</span>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" style="height: 30%; background-color: var(--success);"></div>
+                            <span class="bar-label">Mié</span>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" style="height: 80%; background-color: var(--warning);"></div>
+                            <span class="bar-label">Jue</span>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" style="height: 50%; background-color: var(--warning);"></div>
+                            <span class="bar-label">Vie</span>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" style="height: 90%; background-color: var(--danger);"></div>
+                            <span class="bar-label">Sáb</span>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" style="height: 70%; background-color: var(--warning);"></div>
+                            <span class="bar-label">Dom</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: center; font-size: 12px; color: var(--text-secondary);">
+                        <div style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: var(--success); border-radius: 2px;"></span> Baja</div>
+                        <div style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: var(--warning); border-radius: 2px;"></span> Moderada</div>
+                        <div style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: var(--danger); border-radius: 2px;"></span> Crítica</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">Action completed</div>
+
+    <script src="../assets/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Admin ElderCare</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Enlace al CSS COMPARTIDO -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body class="app-layout">
+
+    <!-- SIDEBAR ADMINISTRATIVO -->
+    <aside class="sidebar" id="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="logo-title">ELDERCARE</div>
+                <div class="logo-subtitle">PANEL ADMINISTRATIVO</div>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="admin-dashboard.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="pacientes.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+                        Pacientes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="alertas.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-bell"></i></span>
+                        Alertas
+                        <span class="badge-alert">8</span>
+                    </a>
+                </li>
+                <!-- ESTE ES EL ITEM ACTIVO -->
+                <li class="nav-item">
+                    <a href="usuarios.html" class="nav-link active">
+                        <span class="nav-icon"><i class="fa-solid fa-user-gear"></i></span>
+                        Gestión de Usuarios
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="iot.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-map-location-dot"></i></span>
+                        Mapa IoT
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="reportes.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-file-medical-alt"></i></span>
+                        Reportes Clínicos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="auditoria.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+                        Log de Auditoría
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="user-profile">
+            <img src="https://picsum.photos/seed/admin/100/100" alt="Admin" class="avatar">
+            <div class="user-info">
+                <h4>Admin Sistema</h4>
+                <p>Super Usuario</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <header class="top-header">
+            <button class="icon-btn" id="menu-toggle" style="margin-right: 15px; display: none;">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <h1 class="page-title">Gestión de Usuarios</h1>
+            
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" class="search-input" placeholder="Buscar usuario, rol o ID...">
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-btn"><i class="fa-solid fa-gear"></i></button>
+                <button class="icon-btn">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+                <div class="date-badge">Dec 14, 2023</div>
+            </div>
+        </header>
+
+        <div class="users-container" style="padding: 32px; max-width: 1600px; margin: 0 auto;">
+            
+            <!-- Resumen Stats (Usuarios) -->
+            <div class="stats-grid" style="margin-bottom: 30px;">
+                <div class="card summary-card">
+                    <div class="card-header">
+                        <span class="card-title">Total Staff</span>
+                        <i class="fa-solid fa-user-doctor card-icon"></i>
+                    </div>
+                    <div class="card-value">57</div>
+                    <div class="card-indicator text-green">
+                        <i class="fa-solid fa-check"></i> Operativos
+                    </div>
+                </div>
+                <div class="card summary-card">
+                    <div class="card-header">
+                        <span class="card-title">Médicos</span>
+                        <i class="fa-solid fa-stethoscope card-icon"></i>
+                    </div>
+                    <div class="card-value">12</div>
+                    <div class="card-indicator text-gray">
+                        <i class="fa-solid fa-user-md"></i> Activos
+                    </div>
+                </div>
+                <div class="card summary-card">
+                    <div class="card-header">
+                        <span class="card-title">Cuidadores</span>
+                        <i class="fa-solid fa-hand-holding-heart card-icon"></i>
+                    </div>
+                    <div class="card-value">45</div>
+                    <div class="card-indicator text-gray">
+                        <i class="fa-solid fa-users"></i> Asignados
+                    </div>
+                </div>
+                <div class="card summary-card critical-alert">
+                    <div class="card-header">
+                        <span class="card-title">Dispositivos IoT</span>
+                        <i class="fa-solid fa-microchip card-icon text-red"></i>
+                    </div>
+                    <div class="card-value">128</div>
+                    <div class="card-indicator text-red">
+                        <i class="fa-solid fa-triangle-exclamation"></i> 3 Batería Baja
+                    </div>
+                </div>
+            </div>
+
+            <!-- Header de Lista y Botón Agregar -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary);">Directorio de Usuarios</h3>
+                <button class="btn-expediente" style="width: auto; padding: 10px 20px; background-color: var(--sidebar-bg); color: white;" onclick="showToast('Abriendo formulario de nuevo usuario...')">
+                    <i class="fa-solid fa-plus"></i> Nuevo Usuario
+                </button>
+            </div>
+
+            <!-- Tabs de Filtro -->
+            <div class="role-tabs" id="roleTabs">
+                <button class="tab-btn active" data-filter="all">Todos</button>
+                <button class="tab-btn" data-filter="doctor">Médicos</button>
+                <button class="tab-btn" data-filter="caregiver">Cuidadores</button>
+                <button class="tab-btn" data-filter="device">Dispositivos IoT</button>
+            </div>
+
+            <!-- Lista de Usuarios -->
+            <div id="usersList">
+                
+                <!-- USUARIO 1: MÉDICO -->
+                <div class="user-card-item" data-role="doctor">
+                    <div class="user-left">
+                        <img src="https://picsum.photos/seed/doc1/100/100" class="user-avatar-lg" alt="Dr">
+                        <div class="user-details">
+                            <h4>Dr. Alejandro García</h4>
+                            <p>alejandro.g@elder.care | ID: #MED-001</p>
+                            <span class="user-role-badge role-doctor">Médico Psiquiatra</span>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn-action-sm" onclick="showToast('Asignando lista de pacientes...')">
+                            <i class="fa-solid fa-user-plus"></i> Asignar
+                        </button>
+                        <button class="btn-action-sm" onclick="showToast('Editando usuario...')">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </button>
+                        <button class="btn-action-sm btn-action-danger" onclick="showToast('Usuario eliminado')">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- USUARIO 2: CUIDADOR -->
+                <div class="user-card-item" data-role="caregiver">
+                    <div class="user-left">
+                        <img src="https://picsum.photos/seed/care1/100/100" class="user-avatar-lg" alt="Care">
+                        <div class="user-details">
+                            <h4>María López</h4>
+                            <p>maria.lopez@elder.care | ID: #CAR-042</p>
+                            <span class="user-role-badge role-caregiver">Cuidador Principal</span>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn-action-sm" onclick="showToast('Asignando paciente a María...')">
+                            <i class="fa-solid fa-user-plus"></i> Asignar
+                        </button>
+                        <button class="btn-action-sm" onclick="showToast('Editando usuario...')">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </button>
+                        <button class="btn-action-sm btn-action-danger" onclick="showToast('Usuario eliminado')">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- USUARIO 3: CUIDADOR (PENDIENTE) -->
+                <div class="user-card-item" data-role="caregiver">
+                    <div class="user-left">
+                        <img src="https://picsum.photos/seed/care2/100/100" class="user-avatar-lg" alt="Care">
+                        <div class="user-details">
+                            <h4>Carlos Ruiz</h4>
+                            <p>carlos.ruiz@email.com | ID: #CAR-043</p>
+                            <span class="user-role-badge role-caregiver" style="background-color: #FEF3C7; color: #92400E;">Cuidador (Pendiente)</span>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn-action-sm btn-action-primary" onclick="showToast('Aprobando usuario...')">
+                            <i class="fa-solid fa-check"></i> Aprobar
+                        </button>
+                        <button class="btn-action-sm" onclick="showToast('Editando usuario...')">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </button>
+                        <button class="btn-action-sm btn-action-danger" onclick="showToast('Rechazando usuario...')">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- USUARIO 4: DISPOSITIVO IOT -->
+                <div class="user-card-item" data-role="device">
+                    <div class="user-left">
+                        <div class="device-icon">
+                            <i class="fa-solid fa-watch-fitness-smart"></i>
+                        </div>
+                        <div class="user-details">
+                            <h4>SmartWatch Gen 3</h4>
+                            <p>SN: 8839-AD-22 | MAC: 00:1A:2B:3C:4D</p>
+                            <span class="user-role-badge role-device" style="color: var(--danger); border-color: var(--danger);">Batería Crítica (12%)</span>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn-action-sm" onclick="showToast('Asignando a paciente...')">
+                            <i class="fa-solid fa-link"></i> Vincular
+                        </button>
+                        <button class="btn-action-sm" onclick="showToast('Reiniciando dispositivo...')">
+                            <i class="fa-solid fa-power-off"></i> Reiniciar
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Paginación Visual -->
+            <div class="pagination">
+                <button class="page-btn"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <button class="page-btn"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Action completed</div>
+
+    <!-- Enlace al JS COMPARTIDO -->
+    <script src="../assets/js/script.js"></script>
+</body>
+</html>

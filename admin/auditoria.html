@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log de Auditoría - Admin ElderCare</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body class="app-layout">
+
+    <!-- SIDEBAR ADMINISTRATIVO -->
+    <aside class="sidebar" id="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="logo-title">ELDERCARE</div>
+                <div class="logo-subtitle">PANEL ADMINISTRATIVO</div>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="admin-dashboard.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="pacientes.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+                        Pacientes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="alertas.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-bell"></i></span>
+                        Alertas
+                        <span class="badge-alert">8</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="usuarios.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-user-gear"></i></span>
+                        Gestión de Usuarios
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="iot.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-map-location-dot"></i></span>
+                        Monitoreo IoT
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="reportes.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-file-medical-alt"></i></span>
+                        Reportes Clínicos
+                    </a>
+                </li>
+                <!-- ESTE ES EL ITEM ACTIVO -->
+                <li class="nav-item">
+                    <a href="auditoria.html" class="nav-link active">
+                        <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+                        Log de Auditoría
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="user-profile">
+            <img src="https://picsum.photos/seed/admin/100/100" alt="Admin" class="avatar">
+            <div class="user-info">
+                <h4>Admin Sistema</h4>
+                <p>Super Usuario</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <header class="top-header">
+            <button class="icon-btn" id="menu-toggle" style="margin-right: 15px; display: none;">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <h1 class="page-title">Log de Auditoría</h1>
+            
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" class="search-input" placeholder="Buscar evento, usuario o ID...">
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-btn"><i class="fa-solid fa-gear"></i></button>
+                <button class="icon-btn">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+                <div class="date-badge">Dec 14, 2023</div>
+            </div>
+        </header>
+
+        <div class="audit-container">
+            
+            <!-- FILTROS DE AUDITORÍA -->
+            <div class="card audit-filters-card">
+                <form id="auditForm" onsubmit="event.preventDefault(); filterAuditLogs();">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Fecha Inicio</label>
+                            <input type="date" class="form-input" id="auditStartDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Fecha Fin</label>
+                            <input type="date" class="form-input" id="auditEndDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Usuario</label>
+                            <select class="form-input" id="auditUser">
+                                <option value="all">Todos los Usuarios</option>
+                                <option value="admin">Admin Sistema</option>
+                                <option value="doctor">Dra. Sarah Miller</option>
+                                <option value="doctor2">Dr. James Doe</option>
+                                <option value="system">System Bot</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Operación</label>
+                            <select class="form-input" id="auditOperation">
+                                <option value="all">Todas las Acciones</option>
+                                <option value="login">Inicio de Sesión</option>
+                                <option value="update">Actualización de Datos</option>
+                                <option value="create">Creación de Registro</option>
+                                <option value="delete">Eliminación</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-actions-right">
+                        <button type="button" class="btn-action-sm" onclick="document.getElementById('auditForm').reset(); showToast('Filtros limpiados')">
+                            <i class="fa-solid fa-rotate-left"></i> Resetear
+                        </button>
+                        <button type="submit" class="btn-expediente" style="width: auto; padding: 12px 24px; background-color: var(--sidebar-bg); color: white;">
+                            <i class="fa-solid fa-filter"></i> Filtrar Registros
+                        </button>
+                        <button type="button" class="btn-action-sm" onclick="exportAuditLog()">
+                            <i class="fa-solid fa-file-csv"></i> Exportar CSV
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- TABLA DE LOGS -->
+            <div class="card audit-table-card">
+                <div class="section-header">
+                    <h3 class="section-title">Registros del Sistema</h3>
+                    <span style="font-size: 13px; color: var(--text-secondary);">Mostrando últimos 50 eventos</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="custom-table audit-table">
+                        <thead>
+                            <tr>
+                                <th>ID Evento</th>
+                                <th>Fecha / Hora</th>
+                                <th>Usuario</th>
+                                <th>Acción</th>
+                                <th>Detalle</th>
+                                <th>IP Origen</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="audit-id">#EVT-9921</span></td>
+                                <td>
+                                    <div style="font-weight: 600;">14 Dic, 2023</div>
+                                    <div style="font-size: 11px; color: var(--text-light);">10:45 AM</div>
+                                </td>
+                                <td>Admin Sistema</td>
+                                <td><span class="audit-badge-update">UPDATE</span></td>
+                                <td>Modificó configuración global de alertas.</td>
+                                <td>192.168.1.10</td>
+                                <td><span style="color: var(--success);"><i class="fa-solid fa-check"></i> Éxito</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="audit-id">#EVT-9920</span></td>
+                                <td>
+                                    <div style="font-weight: 600;">14 Dic, 2023</div>
+                                    <div style="font-size: 11px; color: var(--text-light);">10:30 AM</div>
+                                </td>
+                                <td>Dra. Sarah Miller</td>
+                                <td><span class="audit-badge-update">UPDATE</span></td>
+                                <td>Actualizó notas en expediente #P-1024 (Robert Miller).</td>
+                                <td>192.168.1.15</td>
+                                <td><span style="color: var(--success);"><i class="fa-solid fa-check"></i> Éxito</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="audit-id">#EVT-9919</span></td>
+                                <td>
+                                    <div style="font-weight: 600;">14 Dic, 2023</div>
+                                    <div style="font-size: 11px; color: var(--text-light);">09:15 AM</div>
+                                </td>
+                                <td>System Bot</td>
+                                <td><span class="audit-badge-create">CREATE</span></td>
+                                <td>Generación automática de reporte diario.</td>
+                                <td>127.0.0.1 (Local)</td>
+                                <td><span style="color: var(--success);"><i class="fa-solid fa-check"></i> Éxito</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="audit-id">#EVT-9918</span></td>
+                                <td>
+                                    <div style="font-weight: 600;">14 Dic, 2023</div>
+                                    <div style="font-size: 11px; color: var(--text-light);">08:00 AM</div>
+                                </td>
+                                <td>Admin Sistema</td>
+                                <td><span class="audit-badge-delete">DELETE</span></td>
+                                <td>Eliminó usuario #CAR-043 (Carlos Ruiz).</td>
+                                <td>192.168.1.10</td>
+                                <td><span style="color: var(--success);"><i class="fa-solid fa-check"></i> Éxito</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="audit-id">#EVT-9917</span></td>
+                                <td>
+                                    <div style="font-weight: 600;">13 Dic, 2023</div>
+                                    <div style="font-size: 11px; color: var(--text-light);">06:30 PM</div>
+                                </td>
+                                <td>Dr. James Doe</td>
+                                <td><span class="audit-badge-login">LOGIN</span></td>
+                                <td>Inicio de sesión desde dispositivo móvil.</td>
+                                <td>189.203.44.12</td>
+                                <td><span style="color: var(--success);"><i class="fa-solid fa-check"></i> Éxito</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="audit-id">#EVT-9916</span></td>
+                                <td>
+                                    <div style="font-weight: 600;">13 Dic, 2023</div>
+                                    <div style="font-size: 11px; color: var(--text-light);">06:29 PM</div>
+                                </td>
+                                <td>Desconocido</td>
+                                <td><span class="audit-badge-login">LOGIN</span></td>
+                                <td>Intento de acceso fallido (Contraseña incorrecta).</td>
+                                <td>189.203.44.12</td>
+                                <td><span style="color: var(--danger);"><i class="fa-solid fa-xmark"></i> Fallido</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="toast" class="toast">Action completed</div>
+    <script src="../assets/js/script.js"></script>
+</body>
+</html>

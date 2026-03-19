@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Administrativo - ElderCare</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Enlace al CSS COMPARTIDO -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body class="app-layout">
+
+    <!-- SIDEBAR ADMINISTRATIVO -->
+    <aside class="sidebar" id="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-shield-halved"></i> <!-- Icono de Admin -->
+                </div>
+                <div class="logo-title">ELDERCARE</div>
+                <div class="logo-subtitle">PANEL ADMINISTRATIVO</div>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="pacientes.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+                        Pacientes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="alertas.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-bell"></i></span>
+                        Alertas
+                        <span class="badge-alert">8</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="usuarios.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-user-gear"></i></span>
+                        Gestión de Usuarios
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="iot.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-map-location-dot"></i></span>
+                        Mapa de Monitoreo IoT
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="reportes.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-file-medical-alt"></i></span>
+                        Reportes Clínicos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="auditoria.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+                        Log de Auditoría
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="user-profile">
+            <img src="https://picsum.photos/seed/admin/100/100" alt="Admin" class="avatar">
+            <div class="user-info">
+                <h4>Admin Sistema</h4>
+                <p>Super Usuario</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="top-header">
+            <button class="icon-btn" id="menu-toggle" style="margin-right: 15px; display: none;">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <h1 class="page-title">Dashboard Administrativo</h1>
+            
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" class="search-input" placeholder="Buscar en el sistema...">
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-btn" title="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+                <button class="icon-btn" title="Notifications">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+                <div class="date-badge">Dec 14, 2023</div>
+            </div>
+        </header>
+
+        <!-- Admin Content -->
+        <div class="admin-container">
+            
+            <!-- Stats Row -->
+            <div class="stats-grid">
+                <div class="card summary-card">
+                    <div class="card-header">
+                        <span class="card-title">Pacientes Activos</span>
+                        <i class="fa-solid fa-users card-icon"></i>
+                    </div>
+                    <div class="card-value">1,284</div>
+                    <div class="card-indicator text-green">
+                        <i class="fa-solid fa-arrow-trend-up"></i> +5% este mes
+                    </div>
+                </div>
+
+                <div class="card summary-card critical-alert">
+                    <div class="card-header">
+                        <span class="card-title">Alertas Críticas</span>
+                        <i class="fa-solid fa-triangle-exclamation card-icon text-red"></i>
+                    </div>
+                    <div class="card-value text-red">8</div>
+                    <div class="card-indicator text-red">
+                        <i class="fa-solid fa-circle-exclamation"></i> Requieren atención
+                    </div>
+                </div>
+
+                <div class="card summary-card">
+                    <div class="card-header">
+                        <span class="card-title">Sesiones del Día</span>
+                        <i class="fa-solid fa-video card-icon"></i>
+                    </div>
+                    <div class="card-value">156</div>
+                    <div class="card-indicator text-gray">
+                        <i class="fa-regular fa-clock"></i> 23 en curso
+                    </div>
+                </div>
+
+                <div class="card summary-card" style="border-left: 4px solid var(--info);">
+                    <div class="card-header">
+                        <span class="card-title">Staff Online</span>
+                        <i class="fa-solid fa-user-doctor card-icon" style="color: var(--info);"></i>
+                    </div>
+                    <div class="card-value" style="color: var(--info);">42</div>
+                    <div class="card-indicator text-green">
+                        <i class="fa-solid fa-check"></i> Cobertura óptima
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Chart & Live Sessions -->
+            <div class="admin-grid-2">
+                <!-- Chart -->
+                <div class="card section-chart-trend">
+                    <div class="section-header">
+                        <div>
+                            <h3 class="section-title">Tendencia de Alertas Global</h3>
+                            <p class="section-subtitle">Alertas por categoría (Últimos 7 días)</p>
+                        </div>
+                        <select class="chart-select">
+                            <option>Última Semana</option>
+                            <option>Último Mes</option>
+                        </select>
+                    </div>
+
+                    <div class="bar-chart-container">
+                        <div class="bar-group">
+                            <div class="bar" style="height: 30%; background-color: var(--warning);"></div>
+                            <span class="bar-label">Lun</span>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" style="height: 45%; background-color: var(--warning);"></div>
+                            <span class="bar-label">Mar</span>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" style="height: 35%; background-color: var(--success);"></div>
+                            <span class="bar-label">Mié</span>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" style="height: 60%; background-color: var(--warning);"></div>
+                            <span class="bar-label">Jue</span>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" style="height: 50%; background-color: var(--warning);"></div>
+                            <span class="bar-label">Vie</span>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" style="height: 75%; background-color: var(--danger);"></div>
+                            <span class="bar-label">Sáb</span>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" style="height: 40%; background-color: var(--success);"></div>
+                            <span class="bar-label">Dom</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Sessions -->
+                <div class="card section-live-sessions">
+                    <div class="section-header">
+                        <h3 class="section-title">Sesiones en Vivo</h3>
+                        <a href="#" class="table-header-link">Ver Monitor</a>
+                    </div>
+                    
+                    <div class="live-sessions-list">
+                        <div class="live-item">
+                            <div class="live-avatar">
+                                <img src="https://picsum.photos/seed/doc1/40/40" class="avatar" alt="Doc">
+                                <div class="live-indicator"></div>
+                            </div>
+                            <div class="live-info">
+                                <div class="live-doc">Dr. A. Smith</div>
+                                <div class="live-patient">con Robert M.</div>
+                            </div>
+                            <div class="live-time">14m</div>
+                        </div>
+
+                        <div class="live-item">
+                            <div class="live-avatar">
+                                <img src="https://picsum.photos/seed/doc2/40/40" class="avatar" alt="Doc">
+                                <div class="live-indicator"></div>
+                            </div>
+                            <div class="live-info">
+                                <div class="live-doc">Dra. L. Gomez</div>
+                                <div class="live-patient">con Elena R.</div>
+                            </div>
+                            <div class="live-time">42m</div>
+                        </div>
+
+                        <div class="live-item">
+                            <div class="live-avatar">
+                                <img src="https://picsum.photos/seed/doc3/40/40" class="avatar" alt="Doc">
+                                <div class="live-indicator"></div>
+                            </div>
+                            <div class="live-info">
+                                <div class="live-doc">Dr. J. Doe</div>
+                                <div class="live-patient">con Carlos M.</div>
+                            </div>
+                            <div class="live-time">05m</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: Recent Alerts & Audit Log -->
+            <div class="admin-grid-2">
+                <!-- Alertas Recientes (Tabla) -->
+                <div class="card section-alerts-list">
+                    <div class="section-header">
+                        <h3 class="section-title">Alertas Recientes (Global)</h3>
+                        <a href="alertas.html" class="table-header-link">Ver Todo</a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Paciente</th>
+                                    <th>Tipo</th>
+                                    <th>Hora</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><div class="patient-cell"><img src="https://picsum.photos/seed/p1/30/30" class="avatar"> Arthur T.</div></td>
+                                    <td>Caída</td>
+                                    <td>2 min</td>
+                                    <td><span class="risk-badge risk-high">HIGH</span></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="patient-cell"><img src="https://picsum.photos/seed/p2/30/30" class="avatar"> Maria L.</div></td>
+                                    <td>Pánico</td>
+                                    <td>15 min</td>
+                                    <td><span class="risk-badge risk-moderate">MED</span></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="patient-cell"><img src="https://picsum.photos/seed/p3/30/30" class="avatar"> John D.</div></td>
+                                    <th>Signos Vitales</th>
+                                    <td>1 hr</td>
+                                    <td><span class="risk-badge risk-low">LOW</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Log de Auditoría (Tabla) -->
+                <div class="card section-audit-log">
+                    <div class="section-header">
+                        <h3 class="section-title">Log de Auditoría Reciente</h3>
+                        <a href="#" class="table-header-link">Exportar</a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="custom-table audit-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Acción</th>
+                                    <th>Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Admin Sistema</td>
+                                    <td><span class="audit-action login">Login Exitoso</span></td>
+                                    <td>10:00 AM</td>
+                                </tr>
+                                <tr>
+                                    <td>Dra. Sarah M.</td>
+                                    <td><span class="audit-action update">Actualizó Expediente #P1024</span></td>
+                                    <td>09:45 AM</td>
+                                </tr>
+                                <tr>
+                                    <td>System Bot</td>
+                                    <td><span class="audit-action alert">Generó Reporte Diario</span></td>
+                                    <td>08:00 AM</td>
+                                </tr>
+                                <tr>
+                                    <td>Dr. James K.</td>
+                                    <td><span class="audit-action delete">Eliminó Nota Privada</span></td>
+                                    <td>Ayer</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">Action completed</div>
+
+    <script src="../assets/js/script.js"></script>
+</body>
+</html>

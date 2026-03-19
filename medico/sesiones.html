@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sesiones Clínicas - ElderCare System</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Enlace al CSS COMPARTIDO -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div class="logo-title">MENTAL HEALTH</div>
+                <div class="logo-subtitle">PORTAL MÉDICO</div>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-table-columns"></i></span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="pacientes.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+                        Mis Pacientes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="alertas.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-bell"></i></span>
+                        Alertas
+                        <span class="badge-alert">3</span>
+                    </a>
+                </li>
+                <!-- ESTE ES EL ITEM ACTIVO -->
+                <li class="nav-item">
+                    <a href="sesiones.html" class="nav-link active">
+                        <span class="nav-icon"><i class="fa-solid fa-video"></i></span>
+                        Sesiones
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-map-location-dot"></i></span>
+                        Mapa IoT
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="user-profile">
+            <img src="https://picsum.photos/seed/sarah/100/100" alt="Dr. Sarah Miller" class="avatar">
+            <div class="user-info">
+                <h4>Dra. Sarah Miller</h4>
+                <p>Psiquiatra Senior</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="top-header">
+            <button class="icon-btn" id="menu-toggle" style="margin-right: 15px; display: none;">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <h1 class="page-title">Sesiones Clínicas</h1>
+            
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" class="search-input" placeholder="Buscar sesión por paciente o fecha...">
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-btn" title="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+                <button class="icon-btn" title="Notifications">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+                <div class="date-badge">Dec 14, 2023</div>
+            </div>
+        </header>
+
+        <!-- Sessions Content -->
+        <div class="sessions-container">
+            
+            <!-- Resumen de Sesiones (Stats) -->
+            <div class="stats-grid">
+                <div class="card summary-card">
+                    <div class="card-header">
+                        <span class="card-title">Sesiones Hoy</span>
+                        <i class="fa-regular fa-calendar-day card-icon"></i>
+                    </div>
+                    <div class="card-value">8</div>
+                    <div class="card-indicator text-gray">
+                        <i class="fa-regular fa-clock"></i> 3 Pendientes
+                    </div>
+                </div>
+
+                <div class="card summary-card" style="border-left: 4px solid var(--success);">
+                    <div class="card-header">
+                        <span class="card-title">Completadas</span>
+                        <i class="fa-solid fa-check-circle card-icon text-green"></i>
+                    </div>
+                    <div class="card-value text-green">124</div>
+                    <div class="card-indicator text-green">
+                        <i class="fa-solid fa-arrow-trend-up"></i> +12% este mes
+                    </div>
+                </div>
+
+                <div class="card summary-card" style="border-left: 4px solid var(--warning);">
+                    <div class="card-header">
+                        <span class="card-title">Pendientes</span>
+                        <i class="fa-regular fa-clock card-icon" style="color: var(--warning);"></i>
+                    </div>
+                    <div class="card-value" style="color: var(--warning);">5</div>
+                    <div class="card-indicator text-gray">
+                        <i class="fa-solid fa-circle-exclamation"></i> Requieren agenda
+                    </div>
+                </div>
+
+                <div class="card summary-card critical-alert">
+                    <div class="card-header">
+                        <span class="card-title">Riesgo Alto</span>
+                        <i class="fa-solid fa-triangle-exclamation card-icon text-red"></i>
+                    </div>
+                    <div class="card-value text-red">2</div>
+                    <div class="card-indicator text-red">
+                        <i class="fa-solid fa-clipboard-list"></i> Seguimiento prioritario
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layout Principal: Lista y Detalle -->
+            <div class="sessions-main-grid">
+                
+                <!-- Columna Izquierda: Lista de Sesiones -->
+                <div class="sessions-list-column">
+                    <div class="section-header">
+                        <h3 class="section-title">Sesiones Recientes</h3>
+                    </div>
+
+                    <div class="sessions-list">
+                        <!-- Item 1 (Activo/Seleccionado) -->
+                        <div class="session-item-card active">
+                            <div class="s-item-left">
+                                <img src="https://picsum.photos/seed/elena/50/50" class="s-avatar" alt="Elena">
+                                <div class="s-info">
+                                    <h4 class="s-patient-name">Elena Rodriguez</h4>
+                                    <p class="s-session-type">Cognitive Tension Therapy</p>
+                                </div>
+                            </div>
+                            <div class="s-item-right">
+                                <span class="badge badge-success">Completada</span>
+                                <span class="s-time">10:30 AM</span>
+                            </div>
+                        </div>
+
+                        <!-- Item 2 -->
+                        <div class="session-item-card">
+                            <div class="s-item-left">
+                                <img src="https://picsum.photos/seed/carlos/50/50" class="s-avatar" alt="Carlos">
+                                <div class="s-info">
+                                    <h4 class="s-patient-name">Carlos Méndez</h4>
+                                    <p class="s-session-type">Security & Anxiety</p>
+                                </div>
+                            </div>
+                            <div class="s-item-right">
+                                <span class="badge badge-warning">Pendiente</span>
+                                <span class="s-time">11:45 AM</span>
+                            </div>
+                        </div>
+
+                        <!-- Item 3 -->
+                        <div class="session-item-card">
+                            <div class="s-item-left">
+                                <img src="https://picsum.photos/seed/lucia/50/50" class="s-avatar" alt="Lucia">
+                                <div class="s-info">
+                                    <h4 class="s-patient-name">Lucía Valdes</h4>
+                                    <p class="s-session-type">Monthly Review</p>
+                                </div>
+                            </div>
+                            <div class="s-item-right">
+                                <span class="badge badge-success">Completada</span>
+                                <span class="s-time">Ayer</span>
+                            </div>
+                        </div>
+
+                        <!-- Item 4 -->
+                        <div class="session-item-card">
+                            <div class="s-item-left">
+                                <img src="https://picsum.photos/seed/robert/50/50" class="s-avatar" alt="Robert">
+                                <div class="s-info">
+                                    <h4 class="s-patient-name">Robert Miller</h4>
+                                    <p class="s-session-type">Medication Adjustment</p>
+                                </div>
+                            </div>
+                            <div class="s-item-right">
+                                <span class="badge badge-warning">Pendiente</span>
+                                <span class="s-time">Mañana</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botón Nueva Sesión (Footer del listado) -->
+                    <button class="btn-new-session" onclick="showToast('Abriendo formulario de nueva sesión...')">
+                        <i class="fa-solid fa-plus"></i> Nueva Sesión
+                    </button>
+                </div>
+
+                <!-- Columna Derecha: Detalle de Sesión -->
+                <div class="session-detail-card">
+                    <div class="detail-header">
+                        <div>
+                            <h2 class="detail-patient">Elena Rodriguez</h2>
+                            <p class="detail-meta">ID: #P-1029 | Edad: 72 años</p>
+                        </div>
+                        <div class="detail-actions">
+                            <button class="action-btn"><i class="fa-solid fa-file-medical"></i> Expediente</button>
+                            <button class="action-btn"><i class="fa-solid fa-video"></i> Llamar</button>
+                        </div>
+                    </div>
+
+                    <hr class="detail-divider">
+
+                    <div class="detail-section">
+                        <h3 class="detail-subtitle"><i class="fa-regular fa-note-sticky"></i> Notas de la sesión</h3>
+                        <p class="detail-text">
+                            La paciente mostró una mejora notable en la gestión de la ansiedad tras la semana pasada. Se implementaron técnicas de respiración guiada. 
+                            Reporta mejor calidad de sueño (6-7 horas continuas). Se mantuvo la dosis actual de Sertralina.
+                        </p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3 class="detail-subtitle"><i class="fa-solid fa-chart-line"></i> Evolución Emocional</h3>
+                        <p class="detail-subtext">Nivel de ansiedad reportado en las últimas 4 sesiones (Escala 1-10)</p>
+                        
+                        <!-- Gráfica de Barras Simple CSS -->
+                        <div class="mood-chart">
+                            <div class="mood-bar-group">
+                                <div class="mood-bar" style="height: 80%; background-color: var(--warning);"></div>
+                                <span class="mood-label">Sesión 1</span>
+                            </div>
+                            <div class="mood-bar-group">
+                                <div class="mood-bar" style="height: 60%; background-color: var(--warning);"></div>
+                                <span class="mood-label">Sesión 2</span>
+                            </div>
+                            <div class="mood-bar-group">
+                                <div class="mood-bar" style="height: 40%; background-color: var(--info);"></div>
+                                <span class="mood-label">Sesión 3</span>
+                            </div>
+                            <div class="mood-bar-group">
+                                <div class="mood-bar" style="height: 20%; background-color: var(--success);"></div>
+                                <span class="mood-label">Hoy</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">Action completed</div>
+
+    <script src="../assets/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes Clínicos - Admin ElderCare</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body class="app-layout">
+
+    <!-- SIDEBAR ADMINISTRATIVO -->
+    <aside class="sidebar" id="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="logo-title">ELDERCARE</div>
+                <div class="logo-subtitle">PANEL ADMINISTRATIVO</div>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="admin-dashboard.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="pacientes.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+                        Pacientes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="alertas.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-bell"></i></span>
+                        Alertas
+                        <span class="badge-alert">8</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="usuarios.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-user-gear"></i></span>
+                        Gestión de Usuarios
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="iot.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-map-location-dot"></i></span>
+                        Monitoreo IoT
+                    </a>
+                </li>
+                <!-- ESTE ES EL ITEM ACTIVO -->
+                <li class="nav-item">
+                    <a href="reportes.html" class="nav-link active">
+                        <span class="nav-icon"><i class="fa-solid fa-file-medical-alt"></i></span>
+                        Reportes Clínicos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+                        Log de Auditoría
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="user-profile">
+            <img src="https://picsum.photos/seed/admin/100/100" alt="Admin" class="avatar">
+            <div class="user-info">
+                <h4>Admin Sistema</h4>
+                <p>Super Usuario</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <header class="top-header">
+            <button class="icon-btn" id="menu-toggle" style="margin-right: 15px; display: none;">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <h1 class="page-title">Reportes Clínicos</h1>
+            
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" class="search-input" placeholder="Buscar reporte por ID o paciente...">
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-btn"><i class="fa-solid fa-gear"></i></button>
+                <button class="icon-btn">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+                <div class="date-badge">Dec 14, 2023</div>
+            </div>
+        </header>
+
+        <div class="reports-container">
+            
+            <!-- GENERADOR DE REPORTES -->
+            <div class="card report-generator-card">
+                <div class="section-header" style="margin-bottom: 20px;">
+                    <h3 class="section-title">Generar Nuevo Reporte</h3>
+                    <p class="section-subtitle">Configura los parámetros para extraer los datos clínicos.</p>
+                </div>
+
+                <form id="reportForm" onsubmit="event.preventDefault(); generateReport();">
+                    <div class="form-grid">
+                        <!-- Fila 1: Fechas -->
+                        <div class="form-group">
+                            <label class="form-label">Fecha Inicio</label>
+                            <input type="date" class="form-input" id="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Fecha Fin</label>
+                            <input type="date" class="form-input" id="endDate" required>
+                        </div>
+
+                        <!-- Fila 2: Filtros -->
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Escala</label>
+                            <select class="form-input" id="scaleType">
+                                <option value="emotional">Evolución Emocional</option>
+                                <option value="risk">Nivel de Riesgo</option>
+                                <option value="physical">Actividad Física / IoT</option>
+                                <option value="medication">Adherencia a Medicamento</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Alcance</label>
+                            <select class="form-input" id="scopeType">
+                                <option value="global">Global (Todo el sistema)</option>
+                                <option value="doctor">Por Médico Asignado</option>
+                                <option value="individual">Paciente Específico</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-actions-right">
+                        <button type="button" class="btn-action-sm" onclick="resetReportForm()">Limpiar Filtros</button>
+                        <button type="submit" class="btn-expediente" style="width: auto; padding: 12px 24px; background-color: var(--sidebar-bg); color: white;">
+                            <i class="fa-solid fa-chart-pie"></i> Generar Reporte
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- LISTA DE REPORTES -->
+            <div class="card reports-list-card">
+                <div class="section-header">
+                    <h3 class="section-title">Reportes Generados Recientemente</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="action-btn"><i class="fa-solid fa-filter"></i> Filtrar</button>
+                        <button class="action-btn"><i class="fa-solid fa-download"></i> Exportar Todo</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>ID Reporte</th>
+                                <th>Tipo</th>
+                                <th>Alcance / Paciente</th>
+                                <th>Fecha Generación</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span style="font-family: monospace; color: var(--text-secondary);">#REP-2023-089</span></td>
+                                <td>Evolución Emocional</td>
+                                <td>Global</td>
+                                <td>14 Dic, 2023 <br><span style="font-size: 11px; color: var(--text-light);">09:30 AM</span></td>
+                                <td><span class="risk-badge risk-low">Completado</span></td>
+                                <td>
+                                    <button class="btn-action-sm" onclick="showToast('Descargando PDF...')">
+                                        <i class="fa-solid fa-download"></i> PDF
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span style="font-family: monospace; color: var(--text-secondary);">#REP-2023-088</span></td>
+                                <td>Nivel de Riesgo</td>
+                                <td>Dr. Sarah Miller</td>
+                                <td>13 Dic, 2023 <br><span style="font-size: 11px; color: var(--text-light);">04:15 PM</span></td>
+                                <td><span class="risk-badge risk-low">Completado</span></td>
+                                <td>
+                                    <button class="btn-action-sm" onclick="showToast('Descargando PDF...')">
+                                        <i class="fa-solid fa-download"></i> PDF
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span style="font-family: monospace; color: var(--text-secondary);">#REP-2023-087</span></td>
+                                <td>Actividad Física</td>
+                                <td>Robert Miller</td>
+                                <td>12 Dic, 2023 <br><span style="font-size: 11px; color: var(--text-light);">11:00 AM</span></td>
+                                <td><span class="risk-badge risk-low">Completado</span></td>
+                                <td>
+                                    <button class="btn-action-sm" onclick="showToast('Descargando PDF...')">
+                                        <i class="fa-solid fa-download"></i> PDF
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span style="font-family: monospace; color: var(--text-secondary);">#REP-2023-086</span></td>
+                                <td>Adherencia Medicamento</td>
+                                <td>Global</td>
+                                <td>11 Dic, 2023 <br><span style="font-size: 11px; color: var(--text-light);">08:00 AM</span></td>
+                                <td><span class="risk-badge risk-moderate" style="background-color: #FEF3C7; color: #92400E;">Procesando</span></td>
+                                <td>
+                                    <button class="btn-action-sm" disabled style="opacity: 0.5; cursor: not-allowed;">
+                                        <i class="fa-solid fa-spinner fa-spin"></i> Espere
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="toast" class="toast">Action completed</div>
+    <script src="../assets/js/script.js"></script>
+</body>
+</html>

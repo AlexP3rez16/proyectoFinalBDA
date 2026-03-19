@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa IoT - ElderCare Cuidador</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body class="app-layout">
+
+    <!-- SIDEBAR CUIDADOR -->
+    <aside class="sidebar" id="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-hands-holding-circle"></i>
+                </div>
+                <div class="logo-title">ELDERCARE</div>
+                <div class="logo-subtitle">PORTAL CUIDADOR</div>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-table-columns"></i></span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="pacientes.html" class="nav-link">
+                        <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+                        Mis Pacientes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="mapa.html" class="nav-link active">
+                        <span class="nav-icon"><i class="fa-solid fa-map-location-dot"></i></span>
+                        Mapa IoT
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="user-profile">
+            <img src="https://picsum.photos/seed/care1/100/100" alt="María López" class="avatar">
+            <div class="user-info">
+                <h4>María López</h4>
+                <p>Cuidadora Principal</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <header class="top-header">
+            <button class="icon-btn" id="menu-toggle" style="margin-right: 15px; display: none;">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <h1 class="page-title">Mapa de Mis Pacientes</h1>
+
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" class="search-input" placeholder="Buscar paciente en mapa...">
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-btn"><i class="fa-solid fa-gear"></i></button>
+                <button class="icon-btn">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+                <div class="date-badge">Dec 14, 2023</div>
+            </div>
+        </header>
+
+        <div class="iot-container">
+
+            <!-- Stats IoT -->
+            <div class="stats-grid" style="margin-bottom: 24px;">
+                <div class="card summary-card">
+                    <div class="card-header">
+                        <span class="card-title">Pacientes Monitoreados</span>
+                        <i class="fa-solid fa-tower-broadcast card-icon"></i>
+                    </div>
+                    <div class="card-value">4</div>
+                    <div class="card-indicator text-green">
+                        <i class="fa-solid fa-signal"></i> GPS Activo
+                    </div>
+                </div>
+                <div class="card summary-card critical-alert">
+                    <div class="card-header">
+                        <span class="card-title">Fuera de Zona</span>
+                        <i class="fa-solid fa-triangle-exclamation card-icon text-red"></i>
+                    </div>
+                    <div class="card-value text-red">1</div>
+                    <div class="card-indicator text-red">
+                        <i class="fa-solid fa-location-crosshairs"></i> Arthur Thompson
+                    </div>
+                </div>
+                <div class="card summary-card">
+                    <div class="card-header">
+                        <span class="card-title">Dispositivos Activos</span>
+                        <i class="fa-solid fa-microchip card-icon"></i>
+                    </div>
+                    <div class="card-value">4</div>
+                    <div class="card-indicator text-green">
+                        <i class="fa-solid fa-check"></i> Todos conectados
+                    </div>
+                </div>
+                <div class="card summary-card">
+                    <div class="card-header">
+                        <span class="card-title">Batería Promedio</span>
+                        <i class="fa-solid fa-battery-three-quarters card-icon" style="color: var(--success);"></i>
+                    </div>
+                    <div class="card-value">76%</div>
+                    <div class="card-indicator text-green">
+                        <i class="fa-solid fa-bolt"></i> Estable
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mapa + Lista -->
+            <div class="iot-main-grid">
+
+                <!-- Mapa Leaflet -->
+                <div class="card map-section">
+                    <div class="section-header" style="margin-bottom: 15px;">
+                        <h3 class="section-title">Ubicación en Tiempo Real</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="action-btn" onclick="simulateAlert()">
+                                <i class="fa-solid fa-bell"></i> Simular Alerta
+                            </button>
+                            <button class="action-btn" onclick="resetMap()">
+                                <i class="fa-solid fa-rotate-right"></i> Recargar
+                            </button>
+                        </div>
+                    </div>
+                    <div id="map" style="height: 500px; width: 100%; border-radius: 8px; z-index: 1;"></div>
+                </div>
+
+                <!-- Lista Lateral -->
+                <div class="card active-alerts-panel">
+                    <div class="section-header">
+                        <h3 class="section-title">Estado de Mis Pacientes</h3>
+                    </div>
+
+                    <div class="alert-list-scroll">
+                        <div class="iot-alert-item critical">
+                            <div class="alert-icon">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+                            <div class="alert-info">
+                                <h4>Arthur Thompson</h4>
+                                <p>Fuera de zona asignada.</p>
+                                <span class="time-ago">Hace 22 min</span>
+                            </div>
+                            <button class="btn-action-sm btn-action-primary" onclick="showToast('Llamando a Arthur...')">
+                                <i class="fa-solid fa-phone"></i>
+                            </button>
+                        </div>
+
+                        <div class="iot-alert-item safe">
+                            <div class="alert-icon">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <div class="alert-info">
+                                <h4>Robert Miller</h4>
+                                <p>En "Zona Hogar".</p>
+                                <span class="time-ago">Hace 5 min</span>
+                            </div>
+                            <button class="btn-action-sm" onclick="showToast('Viendo ubicación de Robert...')">
+                                Ver
+                            </button>
+                        </div>
+
+                        <div class="iot-alert-item safe">
+                            <div class="alert-icon">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <div class="alert-info">
+                                <h4>Margaret Thompson</h4>
+                                <p>En "Zona Sur".</p>
+                                <span class="time-ago">Hace 30 min</span>
+                            </div>
+                            <button class="btn-action-sm" onclick="showToast('Viendo ubicación de Margaret...')">
+                                Ver
+                            </button>
+                        </div>
+
+                        <div class="iot-alert-item safe">
+                            <div class="alert-icon">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <div class="alert-info">
+                                <h4>Lucille Vance</h4>
+                                <p>En "Zona Centro".</p>
+                                <span class="time-ago">Hace 1 hr</span>
+                            </div>
+                            <button class="btn-action-sm" onclick="showToast('Viendo ubicación de Lucille...')">
+                                Ver
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Alerta flotante -->
+    <div id="floatingAlert" class="floating-alert hidden">
+        <div class="alert-content">
+            <div class="alert-header">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <h3>¡ALERTA DE ZONA!</h3>
+                <button class="close-alert" onclick="hideFloatingAlert()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="alert-body">
+                <p>El paciente <strong>Arthur Thompson</strong> ha salido de su zona segura asignada.</p>
+                <div class="alert-actions">
+                    <button class="btn-expediente" style="background: var(--danger); color: white; border: none;" onclick="hideFloatingAlert(); showToast('Llamando emergencias...')">Llamar Emergencias</button>
+                    <button class="btn-expediente" style="background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color);" onclick="hideFloatingAlert()">Ignorar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Action completed</div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="../assets/js/script.js"></script>
+</body>
+</html>
