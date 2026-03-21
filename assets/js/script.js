@@ -74,14 +74,24 @@ document.addEventListener('DOMContentLoaded', function() {
    LÓGICA MONITOREO IOT (Leaflet)
    ========================= */
 
+// Referencia global al mapa para poder destruirlo antes de reinicializar
+let iotMapInstance = null;
+
 // Función para inicializar el mapa (se ejecuta solo si estamos en la página iot)
 function initIoTMap() {
     // Verificar si existe el div del mapa
     const mapContainer = document.getElementById('map');
     if (!mapContainer) return;
 
+    // Destruir instancia previa para evitar error "Map container already initialized"
+    if (iotMapInstance) {
+        iotMapInstance.remove();
+        iotMapInstance = null;
+    }
+
     // Coordenadas iniciales (Centro genérico, ej. Ciudad de México)
     const map = L.map('map').setView([19.4326, -99.1332], 13);
+    iotMapInstance = map;
 
     // Capa del mapa (OpenStreetMap - Gratis)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
