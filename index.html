@@ -4,96 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ElderCare - Selector de Roles</title>
-    
+
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <style>
-        /* Estilos rápidos para este menú de selección */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #F5F7FA;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            border-top: 5px solid #1E3A5F; /* Azul institucional */
-        }
-
-        h1 {
-            color: #1E3A5F;
-            margin-bottom: 10px;
-            font-size: 24px;
-        }
-
-        p {
-            color: #6B7280;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-
-        .btn-role {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        /* Botón Médico (Azul) */
-        .btn-doctor {
-            background-color: #1E3A5F;
-            color: white;
-        }
-        .btn-doctor:hover { background-color: #152b45; transform: translateY(-2px); }
-
-        /* Botón Admin (Rojo oscuro/Gris) */
-        .btn-admin {
-            background-color: #374151;
-            color: white;
-        }
-        .btn-admin:hover { background-color: #1F2937; transform: translateY(-2px); }
-
-        /* Botón Cuidador (Verde suave) */
-        .btn-caregiver {
-            background-color: #10B981;
-            color: white;
-        }
-        .btn-caregiver:hover { background-color: #059669; transform: translateY(-2px); }
-
-    </style>
+    <!-- Estilos globales -->
+    <link rel="stylesheet" href="assets/css/styles.css">
 </head>
-<body>
+<body class="index-page">
 
-    <div class="container">
-        <div style="font-size: 40px; color: #1E3A5F; margin-bottom: 15px;">
+    <div class="role-selector-card">
+        <div class="role-selector-icon">
             <i class="fa-solid fa-heart-pulse"></i>
         </div>
-        <h1>ElderCare System</h1>
-        <p>Selecciona el perfil para ingresar al demo</p>
+        <h1 class="role-selector-title">ElderCare System</h1>
+        <p class="role-selector-subtitle">Selecciona el perfil para ingresar al demo</p>
 
         <!-- Enlace a Médico -->
         <a href="medico/dashboard.html" class="btn-role btn-doctor">
@@ -109,10 +35,9 @@
         <a href="admin/admin-dashboard.html" class="btn-role btn-admin">
             <i class="fa-solid fa-user-shield"></i> Entrar como Administrador
         </a>
-        
-        <!-- Enlace al Login (Para cuando lo quieras probar) -->
-        <div style="margin-top: 20px;">
-            <a href="login.html" style="font-size: 12px; color: #9CA3AF; text-decoration: none;">O ir a pantalla de Login</a>
+
+        <div class="role-selector-footer">
+            <a href="login.html" class="role-login-link">O ir a pantalla de Login</a>
         </div>
     </div>
 

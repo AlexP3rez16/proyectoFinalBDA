@@ -119,9 +119,16 @@ body {
 }
 .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
-.text-green { color: var(--success); }
-.text-red { color: var(--danger); }
-.text-gray { color: var(--text-secondary); }
+.text-green   { color: var(--success); }
+.text-red     { color: var(--danger); }
+.text-gray    { color: var(--text-secondary); }
+.text-warning { color: var(--warning); }
+.text-info    { color: var(--info); }
+
+/* Border-left de color en summary cards */
+.card-border-warning { border-left: 4px solid var(--warning); }
+.card-border-success { border-left: 4px solid var(--success); }
+.card-border-info    { border-left: 4px solid var(--info); }
 
 /* =========================
    ESTILOS DASHBOARD
@@ -1273,3 +1280,81 @@ svg.line-chart { width: 100%; height: 100%; overflow: visible; }
 }
 
 .popup-btn:hover { background-color: #152b45; }
+
+/* =========================
+   ESTILOS SELECTOR DE ROLES (index.html)
+   ========================= */
+
+.index-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--bg-body);
+    font-family: var(--font-main);
+}
+
+.role-selector-card {
+    background: var(--white);
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    border-top: 5px solid var(--sidebar-bg);
+}
+
+.role-selector-icon {
+    font-size: 40px;
+    color: var(--sidebar-bg);
+    margin-bottom: 15px;
+}
+
+.role-selector-title {
+    color: var(--sidebar-bg);
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.role-selector-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+.btn-role {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-main);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-doctor  { background-color: var(--sidebar-bg); color: var(--white); }
+.btn-admin   { background-color: #374151;            color: var(--white); }
+.btn-caregiver { background-color: var(--success);   color: var(--white); }
+
+.btn-doctor:hover    { background-color: #152b45; transform: translateY(-2px); }
+.btn-admin:hover     { background-color: #1F2937; transform: translateY(-2px); }
+.btn-caregiver:hover { background-color: #059669; transform: translateY(-2px); }
+
+.role-selector-footer { margin-top: 20px; }
+
+.role-login-link {
+    font-size: 12px;
+    color: var(--text-light);
+    text-decoration: none;
+}
+
+.role-login-link:hover { text-decoration: underline; }

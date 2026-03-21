@@ -19,56 +19,7 @@
 <body class="app-layout">
 
     <!-- SIDEBAR -->
-    <aside class="sidebar" id="sidebar">
-        <div>
-            <div class="sidebar-header">
-                <div class="logo-icon">
-                    <i class="fa-solid fa-heart-pulse"></i>
-                </div>
-                <div class="logo-title">MENTAL HEALTH</div>
-                <div class="logo-subtitle">PORTAL MÉDICO</div>
-            </div>
-
-            <ul class="nav-menu">
-                <li class="nav-item">
-    <!-- Apunta de regreso al dashboard -->
-    <a href="dashboard.html" class="nav-link">
-        <span class="nav-icon"><i class="fa-solid fa-table-columns"></i></span>
-        Dashboard
-    </a>
-</li>
-
-<li class="nav-item">
-    <!-- Apunta a sí mismo y marca como activo -->
-    <a href="pacientes.html" class="nav-link active">
-        <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
-        Mis Pacientes
-    </a>
-</li>
-                <li class="nav-item">
-                    <a href="alertas.html" class="nav-link">
-                        <span class="nav-icon"><i class="fa-solid fa-bell"></i></span>
-                        Alertas
-                        <span class="badge-alert">3</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="sesiones.html" class="nav-link">
-                        <span class="nav-icon"><i class="fa-solid fa-video"></i></span>
-                        Sesiones
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <div class="user-profile">
-            <img src="https://picsum.photos/seed/sarah/100/100" alt="Dr. Sarah Miller" class="avatar">
-            <div class="user-info">
-                <h4>Dra. Sarah Miller</h4>
-                <p>Psiquiatra Senior</p>
-            </div>
-        </div>
-    </aside>
+    <aside class="sidebar" id="sidebar"></aside>
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
@@ -139,7 +90,7 @@
                         <span class="card-title">Nivel de Riesgo Promedio</span>
                         <i class="fa-solid fa-shield-halved card-icon"></i>
                     </div>
-                    <div class="card-value text-green" style="color: var(--success);">Bajo</div>
+                    <div class="card-value text-green">Bajo</div>
                     <div class="card-indicator text-gray" style="font-size: 11px;">
                         En los últimos 30 días
                     </div>
@@ -244,6 +195,7 @@
     <!-- Toast Notification -->
     <div id="toast" class="toast">Action completed</div>
 
+    <script src="../assets/js/components.js"></script>
     <script src="../assets/js/script.js"></script>
 </body>
 </html>
