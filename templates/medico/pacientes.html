@@ -6,147 +6,99 @@
 {% block search_placeholder %}Buscar paciente por nombre, diagnóstico o ID{% endblock %}
 
 {% block content %}
-<!-- Patients Content -->
-        <div class="patients-container">
-            
-            <!-- Summary Cards Row -->
-            <div class="stats-grid">
-                <div class="card summary-card">
-                    <div class="card-header">
-                        <span class="card-title">Total Pacientes</span>
-                        <i class="fa-solid fa-hospital-user card-icon"></i>
-                    </div>
-                    <div class="card-value">124</div>
-                    <div class="card-indicator text-green">
-                        <i class="fa-solid fa-arrow-trend-up"></i> +2% respecto a la semana pasada
-                    </div>
-                </div>
+<div class="patients-container">
 
-                <div class="card summary-card critical-alert">
-                    <div class="card-header">
-                        <span class="card-title">Alertas Críticas</span>
-                        <i class="fa-solid fa-triangle-exclamation card-icon text-red"></i>
-                    </div>
-                    <div class="card-value">8</div>
-                    <div class="card-indicator text-red">
-                        <i class="fa-solid fa-arrow-trend-up"></i> +15% incremento
-                    </div>
-                </div>
-
-                <div class="card summary-card">
-                    <div class="card-header">
-                        <span class="card-title">Sesiones Hoy</span>
-                        <i class="fa-regular fa-calendar-check card-icon"></i>
-                    </div>
-                    <div class="card-value">12</div>
-                    <div class="card-indicator text-gray">
-                        <i class="fa-solid fa-arrow-trend-down"></i> -5% vs promedio
-                    </div>
-                </div>
-
-                <div class="card summary-card">
-                    <div class="card-header">
-                        <span class="card-title">Nivel de Riesgo Promedio</span>
-                        <i class="fa-solid fa-shield-halved card-icon"></i>
-                    </div>
-                    <div class="card-value text-green">Bajo</div>
-                    <div class="card-indicator text-gray" style="font-size: 11px;">
-                        En los últimos 30 días
-                    </div>
-                </div>
+    <!-- Summary Cards -->
+    <div class="stats-grid">
+        <div class="card summary-card">
+            <div class="card-header">
+                <span class="card-title">Total Pacientes</span>
+                <i class="fa-solid fa-hospital-user card-icon"></i>
             </div>
-
-            <!-- Patient Cards Grid -->
-            <div class="patients-grid">
-                
-                <!-- Patient 1: Robert Miller -->
-                <div class="card patient-card">
-                    <div class="patient-photo">
-                        <img src="https://picsum.photos/seed/robert/150/150" alt="Robert Miller" class="patient-avatar">
-                    </div>
-                    <div class="patient-info">
-                        <h3 class="patient-name">Robert Miller <span class="patient-age">78 años</span></h3>
-                        <p class="patient-id">ID: #P-1024</p>
-                        <div class="patient-diagnosis">
-                            <span class="diag-label">Diagnóstico:</span> Alzheimer (Fase Aguda)
-                        </div>
-                        <div class="patient-meta">
-                            <span class="meta-item"><i class="fa-regular fa-clock"></i> Última sesión: 10 Dic, 09:00 AM</span>
-                        </div>
-                    </div>
-                    <div class="patient-status-row">
-                        <span class="badge badge-danger">Estado: Crítico</span>
-                        <span class="badge badge-danger">Riesgo: Alto</span>
-                    </div>
-                    <button class="btn-expediente" onclick="showToast('Abriendo expediente de Robert Miller...')">Ver Expediente</button>
-                </div>
-
-                <!-- Patient 2: Margaret Thompson -->
-                <div class="card patient-card">
-                    <div class="patient-photo">
-                        <img src="https://picsum.photos/seed/margaret/150/150" alt="Margaret Thompson" class="patient-avatar">
-                    </div>
-                    <div class="patient-info">
-                        <h3 class="patient-name">Margaret Thompson <span class="patient-age">82 años</span></h3>
-                        <p class="patient-id">ID: #P-1025</p>
-                        <div class="patient-diagnosis">
-                            <span class="diag-label">Diagnóstico:</span> Depresión Mayor
-                        </div>
-                        <div class="patient-meta">
-                            <span class="meta-item"><i class="fa-regular fa-clock"></i> Última sesión: 12 Dic, 11:30 AM</span>
-                        </div>
-                    </div>
-                    <div class="patient-status-row">
-                        <span class="badge badge-warning">Estado: Moderado</span>
-                        <span class="badge badge-warning">Riesgo: Moderado</span>
-                    </div>
-                    <button class="btn-expediente" onclick="showToast('Abriendo expediente de Margaret Thompson...')">Ver Expediente</button>
-                </div>
-
-                <!-- Patient 3: Lucille Vance -->
-                <div class="card patient-card">
-                    <div class="patient-photo">
-                        <img src="https://picsum.photos/seed/lucille/150/150" alt="Lucille Vance" class="patient-avatar">
-                    </div>
-                    <div class="patient-info">
-                        <h3 class="patient-name">Lucille Vance <span class="patient-age">65 años</span></h3>
-                        <p class="patient-id">ID: #P-1026</p>
-                        <div class="patient-diagnosis">
-                            <span class="diag-label">Diagnóstico:</span> Trastorno del Sueño
-                        </div>
-                        <div class="patient-meta">
-                            <span class="meta-item"><i class="fa-regular fa-clock"></i> Última sesión: 08 Dic, 04:00 PM</span>
-                        </div>
-                    </div>
-                    <div class="patient-status-row">
-                        <span class="badge badge-success">Estado: Estable</span>
-                        <span class="badge badge-success">Riesgo: Bajo</span>
-                    </div>
-                    <button class="btn-expediente" onclick="showToast('Abriendo expediente de Lucille Vance...')">Ver Expediente</button>
-                </div>
-
-                <!-- Patient 4: Arthur Thompson -->
-                <div class="card patient-card">
-                    <div class="patient-photo">
-                        <img src="https://picsum.photos/seed/arthurp/150/150" alt="Arthur Thompson" class="patient-avatar">
-                    </div>
-                    <div class="patient-info">
-                        <h3 class="patient-name">Arthur Thompson <span class="patient-age">89 años</span></h3>
-                        <p class="patient-id">ID: #P-1027</p>
-                        <div class="patient-diagnosis">
-                            <span class="diag-label">Diagnóstico:</span> Demencia Vascular
-                        </div>
-                        <div class="patient-meta">
-                            <span class="meta-item"><i class="fa-regular fa-clock"></i> Última sesión: 13 Dic, 02:15 PM</span>
-                        </div>
-                    </div>
-                    <div class="patient-status-row">
-                        <span class="badge badge-warning">Estado: Moderado</span>
-                        <span class="badge badge-danger">Riesgo: Alto</span>
-                    </div>
-                    <button class="btn-expediente" onclick="showToast('Abriendo expediente de Arthur Thompson...')">Ver Expediente</button>
-                </div>
-
+            <div class="card-value">{{ total }}</div>
+            <div class="card-indicator text-gray">
+                <i class="fa-solid fa-users"></i> Registrados
             </div>
         </div>
+
+        <div class="card summary-card critical-alert">
+            <div class="card-header">
+                <span class="card-title">Alertas Graves</span>
+                <i class="fa-solid fa-triangle-exclamation card-icon text-red"></i>
+            </div>
+            <div class="card-value text-red">{{ criticos }}</div>
+            <div class="card-indicator text-red">
+                <i class="fa-solid fa-circle-exclamation"></i> Requieren atención
+            </div>
+        </div>
+
+        <div class="card summary-card">
+            <div class="card-header">
+                <span class="card-title">Sesiones Registradas</span>
+                <i class="fa-regular fa-calendar-check card-icon"></i>
+            </div>
+            <div class="card-value">{{ pacientes | selectattr('ultima_sesion') | list | length }}</div>
+            <div class="card-indicator text-gray">
+                <i class="fa-solid fa-clock"></i> Con sesión previa
+            </div>
+        </div>
+
+        <div class="card summary-card">
+            <div class="card-header">
+                <span class="card-title">Sin Alertas</span>
+                <i class="fa-solid fa-shield-halved card-icon"></i>
+            </div>
+            <div class="card-value text-green">{{ total - criticos }}</div>
+            <div class="card-indicator text-green">
+                <i class="fa-solid fa-check"></i> Estables
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Cards Grid -->
+    <div class="patients-grid">
+        {% for p in pacientes %}
+        {% if p['nivel_severidad'] == 'Grave' %}
+            {% set badge_class = 'badge-danger' %}
+            {% set estado = 'Crítico' %}
+        {% elif p['nivel_severidad'] == 'Moderado' %}
+            {% set badge_class = 'badge-warning' %}
+            {% set estado = 'Moderado' %}
+        {% elif p['nivel_severidad'] == 'Leve' %}
+            {% set badge_class = 'badge-warning' %}
+            {% set estado = 'Leve' %}
+        {% else %}
+            {% set badge_class = 'badge-success' %}
+            {% set estado = 'Estable' %}
+        {% endif %}
+
+        <div class="card patient-card">
+            <div class="patient-photo">
+                <img src="https://picsum.photos/seed/{{ p['id_paciente'] }}/150/150" alt="{{ p['nombre'] }}" class="patient-avatar">
+            </div>
+            <div class="patient-info">
+                <h3 class="patient-name">{{ p['nombre'] }} {{ p['apellidos'] }} <span class="patient-age">{{ p['edad'] }} años</span></h3>
+                <p class="patient-id">ID: #P-{{ p['id_paciente'] }}</p>
+                <div class="patient-diagnosis">
+                    <span class="diag-label">Diagnóstico:</span> {{ p['diagnostico_principal'] or 'Sin diagnóstico' }}
+                </div>
+                <div class="patient-meta">
+                    <span class="meta-item">
+                        <i class="fa-regular fa-clock"></i>
+                        Última sesión: {{ p['ultima_sesion'] or 'Sin sesiones' }}
+                    </span>
+                </div>
+            </div>
+            <div class="patient-status-row">
+                <span class="badge {{ badge_class }}">Estado: {{ estado }}</span>
+                <span class="badge {{ badge_class }}">Riesgo: {{ p['nivel_severidad'] or 'Normal' }}</span>
+            </div>
+            <button class="btn-expediente" onclick="showToast('Abriendo expediente de {{ p['nombre'] }} {{ p['apellidos'] }}...')">
+                Ver Expediente
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
 {% endblock %}

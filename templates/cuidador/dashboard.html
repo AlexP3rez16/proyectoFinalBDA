@@ -1,194 +1,132 @@
 {% extends 'base.html' %}
 
 {% block title %}Dashboard Cuidador - ElderCare{% endblock %}
-
 {% block page_title %}Dashboard Cuidador{% endblock %}
 {% block search_placeholder %}Buscar paciente...{% endblock %}
 
 {% block content %}
-<!-- Content -->
-        <div class="patients-container">
+<div class="patients-container">
 
-            <!-- Stats -->
-            <div class="stats-grid">
-                <div class="card summary-card">
-                    <div class="card-header">
-                        <span class="card-title">Pacientes Asignados</span>
-                        <i class="fa-solid fa-user-group card-icon"></i>
-                    </div>
-                    <div class="card-value">8</div>
-                    <div class="card-indicator text-green">
-                        <i class="fa-solid fa-check"></i> Todos registrados
-                    </div>
-                </div>
-
-                <div class="card summary-card critical-alert">
-                    <div class="card-header">
-                        <span class="card-title">Alertas Activas</span>
-                        <i class="fa-solid fa-triangle-exclamation card-icon text-red"></i>
-                    </div>
-                    <div class="card-value text-red">2</div>
-                    <div class="card-indicator text-red">
-                        <i class="fa-solid fa-arrow-trend-up"></i> Requieren atención
-                    </div>
-                </div>
-
-                <div class="card summary-card">
-                    <div class="card-header">
-                        <span class="card-title">Turnos Hoy</span>
-                        <i class="fa-regular fa-calendar-check card-icon"></i>
-                    </div>
-                    <div class="card-value">3</div>
-                    <div class="card-indicator text-gray">
-                        <i class="fa-solid fa-clock"></i> Próximo: 2:00 PM
-                    </div>
-                </div>
-
-                <div class="card summary-card" card-border-success">
-                    <div class="card-header">
-                        <span class="card-title">Pacientes Estables</span>
-                        <i class="fa-solid fa-heart card-icon text-green"></i>
-                    </div>
-                    <div class="card-value text-green">6</div>
-                    <div class="card-indicator text-green">
-                        <i class="fa-solid fa-arrow-trend-up"></i> Sin cambios críticos
-                    </div>
-                </div>
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="card summary-card">
+            <div class="card-header">
+                <span class="card-title">Pacientes Registrados</span>
+                <i class="fa-solid fa-user-group card-icon"></i>
             </div>
-
-            <!-- Two-column layout: Alerts + Tasks -->
-            <div class="alerts-main-grid" style="margin-top: 0;">
-
-                <!-- Alertas Activas -->
-                <div class="card section-alerts-list">
-                    <div class="section-header">
-                        <h3 class="section-title">Alertas de Mis Pacientes</h3>
-                        <a href="pacientes.html" class="table-header-link">Ver Pacientes</a>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="custom-table">
-                            <thead>
-                                <tr>
-                                    <th>Paciente</th>
-                                    <th>Alerta</th>
-                                    <th>Hora</th>
-                                    <th>Estado</th>
-                                    <th>Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <div class="patient-cell">
-                                            <img src="https://picsum.photos/seed/robert/30/30" class="avatar" alt="Robert">
-                                            Robert Miller
-                                        </div>
-                                    </td>
-                                    <td><span class="text-red"><i class="fa-solid fa-person-falling"></i> Caída Detectada</span></td>
-                                    <td>Hace 5 min</td>
-                                    <td><span class="risk-badge risk-high">CRÍTICA</span></td>
-                                    <td>
-                                        <button class="action-btn" onclick="showToast('Llamando a Robert Miller...')">
-                                            <i class="fa-solid fa-phone"></i> Llamar
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="patient-cell">
-                                            <img src="https://picsum.photos/seed/arthurp/30/30" class="avatar" alt="Arthur">
-                                            Arthur Thompson
-                                        </div>
-                                    </td>
-                                    <td><span style="color: var(--warning);"><i class="fa-solid fa-door-open"></i> Salida de Zona</span></td>
-                                    <td>Hace 22 min</td>
-                                    <td><span class="risk-badge risk-moderate">MODERADA</span></td>
-                                    <td>
-                                        <button class="action-btn" onclick="showToast('Localizando a Arthur...')">
-                                            <i class="fa-solid fa-location-dot"></i> Localizar
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="patient-cell">
-                                            <img src="https://picsum.photos/seed/lucille/30/30" class="avatar" alt="Lucille">
-                                            Lucille Vance
-                                        </div>
-                                    </td>
-                                    <td><span style="color: var(--text-secondary);"><i class="fa-solid fa-pills"></i> Medicamento Pendiente</span></td>
-                                    <td>Hace 1 hr</td>
-                                    <td><span class="risk-badge risk-low">BAJA</span></td>
-                                    <td>
-                                        <button class="action-btn" onclick="showToast('Recordatorio enviado a Lucille...')">
-                                            <i class="fa-solid fa-check"></i> Atender
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Próximas Tareas / Turnos -->
-                <div class="card section-chart-trend">
-                    <div class="section-header">
-                        <h3 class="section-title">Mis Tareas del Día</h3>
-                    </div>
-
-                    <div class="live-sessions-list" style="margin-top: 16px;">
-                        <div class="live-item">
-                            <div class="live-avatar">
-                                <img src="https://picsum.photos/seed/robert/40/40" class="avatar" alt="Robert">
-                                <div class="live-indicator"></div>
-                            </div>
-                            <div class="live-info">
-                                <div class="live-doc">Administrar medicación</div>
-                                <div class="live-patient">Robert Miller</div>
-                            </div>
-                            <div class="live-time">10:00 AM</div>
-                        </div>
-
-                        <div class="live-item">
-                            <div class="live-avatar">
-                                <img src="https://picsum.photos/seed/margaret/40/40" class="avatar" alt="Margaret">
-                            </div>
-                            <div class="live-info">
-                                <div class="live-doc">Supervisión y baño</div>
-                                <div class="live-patient">Margaret Thompson</div>
-                            </div>
-                            <div class="live-time">12:00 PM</div>
-                        </div>
-
-                        <div class="live-item">
-                            <div class="live-avatar">
-                                <img src="https://picsum.photos/seed/lucille/40/40" class="avatar" alt="Lucille">
-                            </div>
-                            <div class="live-info">
-                                <div class="live-doc">Control de presión arterial</div>
-                                <div class="live-patient">Lucille Vance</div>
-                            </div>
-                            <div class="live-time">2:00 PM</div>
-                        </div>
-
-                        <div class="live-item">
-                            <div class="live-avatar">
-                                <img src="https://picsum.photos/seed/arthurp/40/40" class="avatar" alt="Arthur">
-                            </div>
-                            <div class="live-info">
-                                <div class="live-doc">Paseo vespertino</div>
-                                <div class="live-patient">Arthur Thompson</div>
-                            </div>
-                            <div class="live-time">4:30 PM</div>
-                        </div>
-                    </div>
-
-                    <button class="btn-new-session" style="margin-top: 20px;" onclick="showToast('Agregando nueva tarea...')">
-                        <i class="fa-solid fa-plus"></i> Nueva Tarea
-                    </button>
-                </div>
-
+            <div class="card-value">{{ total_pacientes }}</div>
+            <div class="card-indicator text-green">
+                <i class="fa-solid fa-check"></i> En el sistema
             </div>
         </div>
+
+        <div class="card summary-card critical-alert">
+            <div class="card-header">
+                <span class="card-title">Alertas Activas</span>
+                <i class="fa-solid fa-triangle-exclamation card-icon text-red"></i>
+            </div>
+            <div class="card-value text-red">{{ alertas_activas }}</div>
+            <div class="card-indicator text-red">
+                <i class="fa-solid fa-arrow-trend-up"></i> Requieren atención
+            </div>
+        </div>
+
+        <div class="card summary-card">
+            <div class="card-header">
+                <span class="card-title">Cuidadores</span>
+                <i class="fa-regular fa-calendar-check card-icon"></i>
+            </div>
+            <div class="card-value">{{ total_cuidadores }}</div>
+            <div class="card-indicator text-gray">
+                <i class="fa-solid fa-users"></i> Registrados
+            </div>
+        </div>
+
+        <div class="card summary-card">
+            <div class="card-header">
+                <span class="card-title">Pacientes Estables</span>
+                <i class="fa-solid fa-heart card-icon text-green"></i>
+            </div>
+            <div class="card-value text-green">
+                {{ pacientes | selectattr('nivel_severidad', 'none') | list | length + pacientes | selectattr('nivel_severidad', 'equalto', 'Normal') | list | length }}
+            </div>
+            <div class="card-indicator text-green">
+                <i class="fa-solid fa-arrow-trend-up"></i> Sin alertas graves
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertas + Observaciones recientes -->
+    <div class="alerts-main-grid" style="margin-top: 0;">
+
+        <!-- Tabla de pacientes con alertas -->
+        <div class="card section-alerts-list">
+            <div class="section-header">
+                <h3 class="section-title">Estado de Pacientes</h3>
+                <a href="{{ url_for('cuidador_pacientes') }}" class="table-header-link">Ver todos</a>
+            </div>
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Diagnóstico</th>
+                            <th>Riesgo</th>
+                            <th>Última Obs.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in pacientes %}
+                        <tr>
+                            <td>
+                                <div class="patient-cell">
+                                    <img src="https://picsum.photos/seed/{{ p['id_paciente'] }}/30/30" class="avatar">
+                                    {{ p['paciente'] }}
+                                </div>
+                            </td>
+                            <td>{{ p['diagnostico_principal'] or '—' }}</td>
+                            <td>
+                                {% if p['nivel_severidad'] == 'Grave' %}
+                                    <span class="risk-badge risk-high">GRAVE</span>
+                                {% elif p['nivel_severidad'] == 'Moderado' %}
+                                    <span class="risk-badge risk-moderate">MODERADO</span>
+                                {% elif p['nivel_severidad'] %}
+                                    <span class="risk-badge risk-low">{{ p['nivel_severidad'] | upper }}</span>
+                                {% else %}
+                                    <span class="risk-badge risk-low">ESTABLE</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ p['fecha_obs'] or '—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Última observación por paciente -->
+        <div class="card section-chart-trend">
+            <div class="section-header">
+                <h3 class="section-title">Últimas Observaciones</h3>
+            </div>
+            <div class="live-sessions-list" style="margin-top: 16px;">
+                {% for p in pacientes %}
+                {% if p['ultima_obs'] %}
+                <div class="live-item">
+                    <div class="live-avatar">
+                        <img src="https://picsum.photos/seed/{{ p['id_paciente'] }}/40/40" class="avatar">
+                    </div>
+                    <div class="live-info">
+                        <div class="live-doc">{{ p['paciente'] }}</div>
+                        <div class="live-patient" style="font-size:12px;">{{ p['ultima_obs'][:60] }}{% if p['ultima_obs']|length > 60 %}...{% endif %}</div>
+                    </div>
+                    <div class="live-time">{{ p['fecha_obs'] }}</div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
 {% endblock %}

@@ -1,136 +1,94 @@
 {% extends 'base.html' %}
 
 {% block title %}Reportes Clínicos - Admin ElderCare{% endblock %}
-
 {% block page_title %}Reportes Clínicos{% endblock %}
-{% block search_placeholder %}Buscar reporte por ID o paciente...{% endblock %}
+{% block search_placeholder %}Buscar reporte por paciente o escala...{% endblock %}
 
 {% block content %}
-<div class="reports-container">
-            
-            <!-- GENERADOR DE REPORTES -->
-            <div class="card report-generator-card">
-                <div class="section-header" style="margin-bottom: 20px;">
-                    <h3 class="section-title">Generar Nuevo Reporte</h3>
-                    <p class="section-subtitle">Configura los parámetros para extraer los datos clínicos.</p>
-                </div>
+<div style="padding: 0 0 32px;">
 
-                <form id="reportForm" onsubmit="event.preventDefault(); generateReport();">
-                    <div class="form-grid">
-                        <!-- Fila 1: Fechas -->
-                        <div class="form-group">
-                            <label class="form-label">Fecha Inicio</label>
-                            <input type="date" class="form-input" id="startDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Fecha Fin</label>
-                            <input type="date" class="form-input" id="endDate" required>
-                        </div>
-
-                        <!-- Fila 2: Filtros -->
-                        <div class="form-group">
-                            <label class="form-label">Tipo de Escala</label>
-                            <select class="form-input" id="scaleType">
-                                <option value="emotional">Evolución Emocional</option>
-                                <option value="risk">Nivel de Riesgo</option>
-                                <option value="physical">Actividad Física / IoT</option>
-                                <option value="medication">Adherencia a Medicamento</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Alcance</label>
-                            <select class="form-input" id="scopeType">
-                                <option value="global">Global (Todo el sistema)</option>
-                                <option value="doctor">Por Médico Asignado</option>
-                                <option value="individual">Paciente Específico</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-actions-right">
-                        <button type="button" class="btn-action-sm" onclick="resetReportForm()">Limpiar Filtros</button>
-                        <button type="submit" class="btn-expediente" style="width: auto; padding: 12px 24px; background-color: var(--sidebar-bg); color: white;">
-                            <i class="fa-solid fa-chart-pie"></i> Generar Reporte
-                        </button>
-                    </div>
-                </form>
+    <!-- Resumen por nivel de riesgo -->
+    <div class="stats-grid" style="margin-bottom: 30px;">
+        <div class="card summary-card">
+            <div class="card-header">
+                <span class="card-title">Total Evaluaciones</span>
+                <i class="fa-solid fa-file-medical card-icon"></i>
             </div>
-
-            <!-- LISTA DE REPORTES -->
-            <div class="card reports-list-card">
-                <div class="section-header">
-                    <h3 class="section-title">Reportes Generados Recientemente</h3>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="action-btn"><i class="fa-solid fa-filter"></i> Filtrar</button>
-                        <button class="action-btn"><i class="fa-solid fa-download"></i> Exportar Todo</button>
-                    </div>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="custom-table">
-                        <thead>
-                            <tr>
-                                <th>ID Reporte</th>
-                                <th>Tipo</th>
-                                <th>Alcance / Paciente</th>
-                                <th>Fecha Generación</th>
-                                <th>Estado</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><span style="font-family: monospace; color: var(--text-secondary);">#REP-2023-089</span></td>
-                                <td>Evolución Emocional</td>
-                                <td>Global</td>
-                                <td>14 Dic, 2023 <br><span style="font-size: 11px; color: var(--text-light);">09:30 AM</span></td>
-                                <td><span class="risk-badge risk-low">Completado</span></td>
-                                <td>
-                                    <button class="btn-action-sm" onclick="showToast('Descargando PDF...')">
-                                        <i class="fa-solid fa-download"></i> PDF
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><span style="font-family: monospace; color: var(--text-secondary);">#REP-2023-088</span></td>
-                                <td>Nivel de Riesgo</td>
-                                <td>Dr. Sarah Miller</td>
-                                <td>13 Dic, 2023 <br><span style="font-size: 11px; color: var(--text-light);">04:15 PM</span></td>
-                                <td><span class="risk-badge risk-low">Completado</span></td>
-                                <td>
-                                    <button class="btn-action-sm" onclick="showToast('Descargando PDF...')">
-                                        <i class="fa-solid fa-download"></i> PDF
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><span style="font-family: monospace; color: var(--text-secondary);">#REP-2023-087</span></td>
-                                <td>Actividad Física</td>
-                                <td>Robert Miller</td>
-                                <td>12 Dic, 2023 <br><span style="font-size: 11px; color: var(--text-light);">11:00 AM</span></td>
-                                <td><span class="risk-badge risk-low">Completado</span></td>
-                                <td>
-                                    <button class="btn-action-sm" onclick="showToast('Descargando PDF...')">
-                                        <i class="fa-solid fa-download"></i> PDF
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><span style="font-family: monospace; color: var(--text-secondary);">#REP-2023-086</span></td>
-                                <td>Adherencia Medicamento</td>
-                                <td>Global</td>
-                                <td>11 Dic, 2023 <br><span style="font-size: 11px; color: var(--text-light);">08:00 AM</span></td>
-                                <td><span class="risk-badge risk-moderate" style="background-color: #FEF3C7; color: #92400E;">Procesando</span></td>
-                                <td>
-                                    <button class="btn-action-sm" disabled style="opacity: 0.5; cursor: not-allowed;">
-                                        <i class="fa-solid fa-spinner fa-spin"></i> Espere
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
+            <div class="card-value">{{ reportes | length }}</div>
+            <div class="card-indicator text-gray"><i class="fa-solid fa-list"></i> Aplicaciones de escalas</div>
         </div>
+        <div class="card summary-card critical-alert">
+            <div class="card-header">
+                <span class="card-title">Riesgo Grave</span>
+                <i class="fa-solid fa-triangle-exclamation card-icon text-red"></i>
+            </div>
+            <div class="card-value text-red">{{ resumen.get('Grave', 0) }}</div>
+            <div class="card-indicator text-red"><i class="fa-solid fa-circle-exclamation"></i> Intervención urgente</div>
+        </div>
+        <div class="card summary-card">
+            <div class="card-header">
+                <span class="card-title">Riesgo Moderado</span>
+                <i class="fa-solid fa-shield-halved card-icon text-warning"></i>
+            </div>
+            <div class="card-value text-warning">{{ resumen.get('Moderado', 0) }}</div>
+            <div class="card-indicator text-gray"><i class="fa-solid fa-clock"></i> Seguimiento activo</div>
+        </div>
+        <div class="card summary-card">
+            <div class="card-header">
+                <span class="card-title">Sin Riesgo</span>
+                <i class="fa-solid fa-circle-check card-icon text-green"></i>
+            </div>
+            <div class="card-value text-green">{{ resumen.get('Normal', 0) }}</div>
+            <div class="card-indicator text-green"><i class="fa-solid fa-check"></i> Normal</div>
+        </div>
+    </div>
+
+    <!-- Tabla de reportes -->
+    <div class="card">
+        <div class="section-header" style="padding: 20px 24px 0;">
+            <h3 class="section-title">Aplicaciones de Escalas Clínicas</h3>
+        </div>
+        <div class="table-responsive" style="padding: 16px 24px;">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Escala</th>
+                        <th>Puntaje</th>
+                        <th>Interpretación</th>
+                        <th>Nivel de Riesgo</th>
+                        <th>Profesional</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reportes %}
+                    <tr>
+                        <td>{{ r['paciente'] }}</td>
+                        <td><span style="font-weight:600;">{{ r['id_escala'] }}</span></td>
+                        <td style="text-align:center;">{{ r['puntaje_total'] }}</td>
+                        <td>{{ r['interpretacion'] or '—' }}</td>
+                        <td>
+                            {% if r['nivel_riesgo'] == 'Grave' %}
+                                <span class="risk-badge risk-high">GRAVE</span>
+                            {% elif r['nivel_riesgo'] == 'Moderado' %}
+                                <span class="risk-badge risk-moderate">MODERADO</span>
+                            {% elif r['nivel_riesgo'] == 'Leve' %}
+                                <span class="risk-badge risk-moderate">LEVE</span>
+                            {% else %}
+                                <span class="risk-badge risk-low">NORMAL</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ r['profesional'] }}</td>
+                        <td>{{ r['fecha'] }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" style="text-align:center; color:var(--text-secondary);">Sin reportes</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
 {% endblock %}

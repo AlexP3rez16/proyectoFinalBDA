@@ -45,12 +45,15 @@
             </ul>
         </div>
         <div class="user-profile">
-            <img src="{{ sidebar.user_img }}" alt="{{ sidebar.user_name }}" class="avatar">
+            <img src="{{ current_user.img }}" alt="{{ current_user.name }}" class="avatar">
             <div class="user-info">
-                <h4>{{ sidebar.user_name }}</h4>
-                <p>{{ sidebar.user_role }}</p>
+                <h4>{{ current_user.name }}</h4>
+                <p>{{ current_user.role }}</p>
             </div>
         </div>
+        <a href="{{ url_for('logout') }}" style="display:block; text-align:center; margin: 12px 16px 0; padding: 8px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); border-radius: 8px; text-decoration: none; font-size: 13px;">
+            <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+        </a>
     </aside>
 
     <!-- MAIN CONTENT -->

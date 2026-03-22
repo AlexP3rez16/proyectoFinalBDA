@@ -1,199 +1,147 @@
 {% extends 'base.html' %}
 
 {% block title %}Alertas - ElderCare System{% endblock %}
-
 {% block page_title %}Alertas del Sistema{% endblock %}
 {% block search_placeholder %}Buscar alerta por paciente o tipo...{% endblock %}
 
 {% block content %}
-<!-- Alerts Content -->
-        <div class="alerts-container">
-            
-            <!-- Summary Cards Row -->
-            <div class="stats-grid">
-                <div class="card summary-card">
-                    <div class="card-header">
-                        <span class="card-title">Total Hoy</span>
-                        <i class="fa-solid fa-bell card-icon"></i>
-                    </div>
-                    <div class="card-value">24</div>
-                    <div class="card-indicator text-gray">
-                        <i class="fa-solid fa-minus"></i> Igual que ayer
-                    </div>
-                </div>
+<div class="alerts-container">
 
-                <div class="card summary-card critical-alert">
-                    <div class="card-header">
-                        <span class="card-title">Críticas</span>
-                        <i class="fa-solid fa-circle-exclamation card-icon text-red"></i>
-                    </div>
-                    <div class="card-value text-red">3</div>
-                    <div class="card-indicator text-red">
-                        <i class="fa-solid fa-arrow-trend-up"></i> Requieren atención
-                    </div>
-                </div>
-
-                <div class="card summary-card" card-border-warning">
-                    <div class="card-header">
-                        <span class="card-title">Moderadas</span>
-                        <i class="fa-solid fa-triangle-exclamation card-icon text-warning"></i>
-                    </div>
-                    <div class="card-value" text-warning">8</div>
-                    <div class="card-indicator text-gray">
-                        <i class="fa-solid fa-clock"></i> En monitoreo
-                    </div>
-                </div>
-
-                <div class="card summary-card" card-border-success">
-                    <div class="card-header">
-                        <span class="card-title">Resueltas</span>
-                        <i class="fa-solid fa-circle-check card-icon text-green"></i>
-                    </div>
-                    <div class="card-value text-green">45</div>
-                    <div class="card-indicator text-green">
-                        <i class="fa-solid fa-check"></i> Atendidas
-                    </div>
-                </div>
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="card summary-card">
+            <div class="card-header">
+                <span class="card-title">Total Alertas</span>
+                <i class="fa-solid fa-bell card-icon"></i>
             </div>
-
-            <!-- Main Layout: Table & Chart -->
-            <div class="alerts-main-grid">
-                
-                <!-- Recent Alerts List (Left) -->
-                <div class="card section-alerts-list">
-                    <div class="section-header">
-                        <h3 class="section-title">Alertas Activas</h3>
-                        <a href="#" class="table-header-link">Ver Histórico</a>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="custom-table">
-                            <thead>
-                                <tr>
-                                    <th>Paciente</th>
-                                    <th>Tipo de Alerta</th>
-                                    <th>Hora</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <div class="patient-cell">
-                                            <img src="https://picsum.photos/seed/robert/30/30" class="avatar" alt="Robert">
-                                            Robert Miller
-                                        </div>
-                                    </td>
-                                    <td><span class="text-red"><i class="fa-solid fa-person-falling"></i> Caída Detectada</span></td>
-                                    <td>Hace 5 min</td>
-                                    <td><span class="risk-badge risk-high">CRÍTICA</span></td>
-                                    <td>
-                                        <button class="action-btn" onclick="showToast('Ver paciente Robert...')">Ver</button>
-                                        <button class="action-btn" onclick="showToast('Alerta marcada como resuelta')"><i class="fa-solid fa-check"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="patient-cell">
-                                            <img src="https://picsum.photos/seed/lucille/30/30" class="avatar" alt="Lucille">
-                                            Lucille Vance
-                                        </div>
-                                    </td>
-                                    <td><span style="color: var(--warning);"><i class="fa-solid fa-heart-pulse"></i> Ritmo Cardíaco Alto</span></td>
-                                    <td>Hace 20 min</td>
-                                    <td><span class="risk-badge risk-moderate">MODERADA</span></td>
-                                    <td>
-                                        <button class="action-btn" onclick="showToast('Ver paciente Lucille...')">Ver</button>
-                                        <button class="action-btn" onclick="showToast('Alerta marcada como resuelta')"><i class="fa-solid fa-check"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="patient-cell">
-                                            <img src="https://picsum.photos/seed/george/30/30" class="avatar" alt="George">
-                                            George Bennett
-                                        </div>
-                                    </td>
-                                    <td><span style="color: var(--text-secondary);"><i class="fa-solid fa-door-open"></i> Salida de Zona</span></td>
-                                    <td>Hace 45 min</td>
-                                    <td><span class="risk-badge risk-low">REVISADA</span></td>
-                                    <td>
-                                        <button class="action-btn" onclick="showToast('Ver paciente George...')">Ver</button>
-                                        <button class="action-btn" onclick="showToast('Alerta marcada como resuelta')"><i class="fa-solid fa-check"></i></button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Alert Trend Chart (Right) -->
-                <div class="card section-chart-trend">
-                    <div class="section-header">
-                        <div>
-                            <h3 class="section-title">Tendencia de Alertas</h3>
-                            <p class="section-subtitle">Últimos 7 días</p>
-                        </div>
-                        <select class="chart-select">
-                            <option>Semana Actual</option>
-                            <option>Semana Pasada</option>
-                        </select>
-                    </div>
-
-                    <!-- CSS Only Bar Chart -->
-                    <div class="bar-chart-container">
-                        <div class="bar-group">
-                            <div class="bar" style="height: 40%; background-color: var(--success);">
-                                <span class="bar-tooltip">4</span>
-                            </div>
-                            <span class="bar-label">Lun</span>
-                        </div>
-                        <div class="bar-group">
-                            <div class="bar" style="height: 60%; background-color: var(--success);">
-                                <span class="bar-tooltip">6</span>
-                            </div>
-                            <span class="bar-label">Mar</span>
-                        </div>
-                        <div class="bar-group">
-                            <div class="bar" style="height: 30%; background-color: var(--success);">
-                                <span class="bar-tooltip">3</span>
-                            </div>
-                            <span class="bar-label">Mié</span>
-                        </div>
-                        <div class="bar-group">
-                            <div class="bar" style="height: 80%; background-color: var(--warning);">
-                                <span class="bar-tooltip">8</span>
-                            </div>
-                            <span class="bar-label">Jue</span>
-                        </div>
-                        <div class="bar-group">
-                            <div class="bar" style="height: 50%; background-color: var(--warning);">
-                                <span class="bar-tooltip">5</span>
-                            </div>
-                            <span class="bar-label">Vie</span>
-                        </div>
-                        <div class="bar-group">
-                            <div class="bar" style="height: 90%; background-color: var(--danger);">
-                                <span class="bar-tooltip">9</span>
-                            </div>
-                            <span class="bar-label">Sáb</span>
-                        </div>
-                        <div class="bar-group">
-                            <div class="bar" style="height: 70%; background-color: var(--warning);">
-                                <span class="bar-tooltip">7</span>
-                            </div>
-                            <span class="bar-label">Dom</span>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: center; font-size: 12px; color: var(--text-secondary);">
-                        <div style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: var(--success); border-radius: 2px;"></span> Baja</div>
-                        <div style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: var(--warning); border-radius: 2px;"></span> Moderada</div>
-                        <div style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: var(--danger); border-radius: 2px;"></span> Crítica</div>
-                    </div>
-                </div>
-
+            <div class="card-value">{{ total }}</div>
+            <div class="card-indicator text-gray">
+                <i class="fa-solid fa-list"></i> Registradas
             </div>
         </div>
+
+        <div class="card summary-card critical-alert">
+            <div class="card-header">
+                <span class="card-title">Graves</span>
+                <i class="fa-solid fa-circle-exclamation card-icon text-red"></i>
+            </div>
+            <div class="card-value text-red">{{ graves }}</div>
+            <div class="card-indicator text-red">
+                <i class="fa-solid fa-arrow-trend-up"></i> Requieren atención
+            </div>
+        </div>
+
+        <div class="card summary-card">
+            <div class="card-header">
+                <span class="card-title">Moderadas</span>
+                <i class="fa-solid fa-triangle-exclamation card-icon text-warning"></i>
+            </div>
+            <div class="card-value text-warning">{{ moderadas }}</div>
+            <div class="card-indicator text-gray">
+                <i class="fa-solid fa-clock"></i> En monitoreo
+            </div>
+        </div>
+
+        <div class="card summary-card">
+            <div class="card-header">
+                <span class="card-title">Resueltas</span>
+                <i class="fa-solid fa-circle-check card-icon text-green"></i>
+            </div>
+            <div class="card-value text-green">{{ resueltas }}</div>
+            <div class="card-indicator text-green">
+                <i class="fa-solid fa-check"></i> Cerradas
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla + Chart -->
+    <div class="alerts-main-grid">
+
+        <!-- Tabla de alertas -->
+        <div class="card section-alerts-list">
+            <div class="section-header">
+                <h3 class="section-title">Alertas Activas</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Tipo de Alerta</th>
+                            <th>Fecha</th>
+                            <th>Severidad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in alertas %}
+                        {% if a['nivel_severidad'] == 'Grave' %}
+                            {% set badge = 'risk-high' %}
+                        {% elif a['nivel_severidad'] == 'Moderado' %}
+                            {% set badge = 'risk-moderate' %}
+                        {% else %}
+                            {% set badge = 'risk-low' %}
+                        {% endif %}
+                        <tr>
+                            <td>
+                                <div class="patient-cell">
+                                    <img src="https://picsum.photos/seed/{{ a['id_paciente'] }}/30/30" class="avatar" alt="{{ a['paciente'] }}">
+                                    {{ a['paciente'] }}
+                                </div>
+                            </td>
+                            <td>{{ a['tipo_alerta'] }}</td>
+                            <td>{{ a['fecha'] }}</td>
+                            <td><span class="risk-badge {{ badge }}">{{ a['nivel_severidad'] | upper }}</span></td>
+                            <td>
+                                <button class="action-btn" onclick="showToast('Viendo alerta de {{ a['paciente'] }}...')">Ver</button>
+                                <form method="POST" action="{{ url_for('alerta_resolver', id_alerta=a['id_alerta']) }}" style="display:inline;">
+                                    <button class="action-btn" type="submit" title="Marcar como resuelta">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Gráfica -->
+        <div class="card section-chart-trend">
+            <div class="section-header">
+                <div>
+                    <h3 class="section-title">Distribución de Alertas</h3>
+                    <p class="section-subtitle">Por nivel de severidad</p>
+                </div>
+            </div>
+            <div class="bar-chart-container">
+                <div class="bar-group">
+                    <div class="bar" style="height: {{ (graves / total * 100) | int if total else 0 }}%; background-color: var(--danger);">
+                        <span class="bar-tooltip">{{ graves }}</span>
+                    </div>
+                    <span class="bar-label">Graves</span>
+                </div>
+                <div class="bar-group">
+                    <div class="bar" style="height: {{ (moderadas / total * 100) | int if total else 0 }}%; background-color: var(--warning);">
+                        <span class="bar-tooltip">{{ moderadas }}</span>
+                    </div>
+                    <span class="bar-label">Moderadas</span>
+                </div>
+                <div class="bar-group">
+                    <div class="bar" style="height: {{ ((total - graves - moderadas) / total * 100) | int if total else 0 }}%; background-color: var(--success);">
+                        <span class="bar-tooltip">{{ total - graves - moderadas }}</span>
+                    </div>
+                    <span class="bar-label">Leves</span>
+                </div>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: center; font-size: 12px; color: var(--text-secondary);">
+                <div style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; background:var(--danger); border-radius:2px;"></span> Grave</div>
+                <div style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; background:var(--warning); border-radius:2px;"></span> Moderada</div>
+                <div style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; background:var(--success); border-radius:2px;"></span> Leve</div>
+            </div>
+        </div>
+
+    </div>
+</div>
 {% endblock %}

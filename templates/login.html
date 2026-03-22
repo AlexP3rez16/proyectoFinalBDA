@@ -26,6 +26,12 @@
             <h1 class="login-title">ElderCare</h1>
             <p class="login-subtitle">Sistema de Monitoreo de Salud</p>
 
+            {% if error %}
+            <div style="background: #fee2e2; color: #dc2626; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 14px;">
+                <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
+            </div>
+            {% endif %}
+
             <form method="POST" action="{{ url_for('login') }}">
                 <div class="form-group">
                     <label class="form-label" for="email">Correo Electrónico</label>
@@ -42,10 +48,10 @@
 
             <!-- Texto de ayuda para la demo -->
             <div class="helper-text">
-                <strong>Simulación de Roles:</strong><br>
-                Escribe "admin" para Admin<br>
-                Escribe "doctor" para Médico<br>
-                Escribe "cuidador" para Cuidador
+                <strong>Usuarios de prueba</strong> (contraseña: 123)<br>
+                <code>cmedina@clinica.com</code> — Admin<br>
+                <code>jramirez@clinica.com</code> — Médico<br>
+                <code>ltorres@clinica.com</code> — Médico
             </div>
         </div>
     </div>

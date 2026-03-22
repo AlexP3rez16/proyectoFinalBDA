@@ -1,204 +1,164 @@
 {% extends 'base.html' %}
 
-{% block title %}ElderCare Monitoring System{% endblock %}
-
+{% block title %}Dashboard Médico - ElderCare{% endblock %}
 {% block page_title %}ElderCare Monitoring System{% endblock %}
-{% block search_placeholder %}Search patients or medical records...{% endblock %}
+{% block search_placeholder %}Buscar pacientes o expedientes...{% endblock %}
 
 {% block content %}
-<!-- Dashboard Grid -->
-        <div class="dashboard-container">
-            
-            <!-- 1. Summary Cards -->
-            <div class="card summary-card">
-                <div class="card-header">
-                    <span class="card-title">Active Patients</span>
-                    <i class="fa-solid fa-user-group card-icon"></i>
-                </div>
-                <div class="card-value">124</div>
-                <div class="card-indicator text-green">
-                    <i class="fa-solid fa-arrow-trend-up"></i> +2% from last week
-                </div>
-            </div>
+<div class="dashboard-container">
 
-            <div class="card summary-card critical-alert">
-                <div class="card-header">
-                    <span class="card-title">Critical Alerts</span>
-                    <i class="fa-solid fa-triangle-exclamation card-icon text-red"></i>
-                </div>
-                <div class="card-value">8</div>
-                <div class="card-indicator text-red">
-                    <i class="fa-solid fa-arrow-trend-up"></i> +15% increase
-                </div>
-            </div>
-
-            <div class="card summary-card">
-                <div class="card-header">
-                    <span class="card-title">Today's Sessions</span>
-                    <i class="fa-regular fa-calendar-check card-icon"></i>
-                </div>
-                <div class="card-value">12</div>
-                <div class="card-indicator text-gray">
-                    <i class="fa-solid fa-arrow-trend-down"></i> -5% vs avg
-                </div>
-            </div>
-
-            <div class="card summary-card">
-                <div class="card-header">
-                    <span class="card-title">Detected Risks</span>
-                    <i class="fa-solid fa-shield-virus card-icon"></i>
-                </div>
-                <div class="card-value">5</div>
-                <div class="card-indicator text-green">
-                    <i class="fa-solid fa-arrow-trend-down"></i> -10% improvement
-                </div>
-            </div>
-
-            <!-- 2. Main Chart Section -->
-            <div class="card section-chart">
-                <div class="section-header">
-                    <div>
-                        <h3 class="section-title">General Emotional Evolution</h3>
-                        <p class="section-subtitle">Average patient emotional wellbeing over time</p>
-                    </div>
-                    <div class="chart-header-right">
-                        <div class="chart-metric">
-                            <div class="metric-val">78%</div>
-                            <div class="metric-trend">+4.2% weekly</div>
-                        </div>
-                        <select class="chart-select">
-                            <option>Last 30 Days</option>
-                            <option>Last 3 Months</option>
-                            <option>Last Year</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="chart-area">
-                    <!-- SVG Chart -->
-                    <svg class="line-chart" viewBox="0 0 800 200" preserveAspectRatio="none">
-                        <defs>
-                            <linearGradient id="gradientFill" x1="0" x2="0" y1="0" y2="1">
-                                <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.2"/>
-                                <stop offset="100%" stop-color="#3B82F6" stop-opacity="0"/>
-                            </linearGradient>
-                        </defs>
-                        <!-- Area fill -->
-                        <path d="M0,150 C150,120 250,160 400,100 C550,40 650,80 800,50 V200 H0 Z" fill="url(#gradientFill)" />
-                        <!-- Line -->
-                        <path d="M0,150 C150,120 250,160 400,100 C550,40 650,80 800,50" class="chart-line" />
-                        <!-- Points -->
-                        <circle cx="0" cy="150" r="4" class="chart-point" />
-                        <circle cx="200" cy="135" r="4" class="chart-point" />
-                        <circle cx="400" cy="100" r="4" class="chart-point" />
-                        <circle cx="600" cy="65" r="4" class="chart-point" />
-                        <circle cx="800" cy="50" r="4" class="chart-point" />
-                    </svg>
-                </div>
-                <div class="chart-labels">
-                    <span>Week 1</span>
-                    <span>Week 2</span>
-                    <span>Week 3</span>
-                    <span>Week 4</span>
-                </div>
-            </div>
-
-            <!-- 3. Upcoming Sessions -->
-            <div class="card section-sessions">
-                <div class="section-header">
-                    <h3 class="section-title">Upcoming Sessions</h3>
-                </div>
-                
-                <div class="session-highlight">
-                    <span class="session-tag">IN 15 MINUTES</span>
-                    <div class="session-time">10:30 AM</div>
-                    <div class="session-patient">Session with Mary S.</div>
-                    <div class="session-type">Cognitive Behavioral Therapy</div>
-                    <button class="btn-join">Join Call</button>
-                </div>
-
-                <ul class="session-list">
-                    <li class="session-item">
-                        <div class="s-time">11:45 AM</div>
-                        <div class="s-details">Robert King – Medication Review</div>
-                    </li>
-                    <li class="session-item">
-                        <div class="s-time">02:30 PM</div>
-                        <div class="s-details">Lucille Vance – Bi-weekly Wellness Check</div>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- 4. Recent Alerts Table -->
-            <div class="card section-table">
-                <div class="section-header">
-                    <h3 class="section-title">Recent Alerts</h3>
-                    <a href="#" class="table-header-link">View All Alerts</a>
-                </div>
-                <table class="custom-table">
-                    <thead>
-                        <tr>
-                            <th>Patient Name</th>
-                            <th>Type</th>
-                            <th>Time</th>
-                            <th>Risk Level</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div class="patient-cell">
-                                    <img src="https://picsum.photos/seed/arthur/30/30" class="avatar" alt="AT">
-                                    Arthur Thompson
-                                </div>
-                            </td>
-                            <td>Fall Detection</td>
-                            <td>2 mins ago</td>
-                            <td><span class="risk-badge risk-high">HIGH RISK</span></td>
-                            <td><button class="action-btn">Respond</button></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="patient-cell">
-                                    <img src="https://picsum.photos/seed/evelyn/30/30" class="avatar" alt="ER">
-                                    Evelyn Rogers
-                                </div>
-                            </td>
-                            <td>Heart Rate Spike</td>
-                            <td>14 mins ago</td>
-                            <td><span class="risk-badge risk-moderate">MODERATE</span></td>
-                            <td><button class="action-btn">Monitor</button></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="patient-cell">
-                                    <img src="https://picsum.photos/seed/george/30/30" class="avatar" alt="GB">
-                                    George Bennett
-                                </div>
-                            </td>
-                            <td>Routine Check Missed</td>
-                            <td>1 hour ago</td>
-                            <td><span class="risk-badge risk-low">LOW RISK</span></td>
-                            <td><button class="action-btn">Review</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- 5. Patient Locations Map -->
-            <div class="card section-map">
-                <div class="section-header">
-                    <div>
-                        <h3 class="section-title">Patient Locations</h3>
-                        <p class="section-subtitle">Live IoT monitoring</p>
-                    </div>
-                    <i class="fa-solid fa-ellipsis icon-btn"></i>
-                </div>
-                <div class="map-placeholder">
-                    <i class="fa-solid fa-location-dot map-pin"></i>
-                </div>
-            </div>
-
+    <!-- Stats -->
+    <div class="card summary-card">
+        <div class="card-header">
+            <span class="card-title">Pacientes Activos</span>
+            <i class="fa-solid fa-user-group card-icon"></i>
         </div>
+        <div class="card-value">{{ total_pacientes }}</div>
+        <div class="card-indicator text-green">
+            <i class="fa-solid fa-users"></i> Registrados
+        </div>
+    </div>
+
+    <div class="card summary-card critical-alert">
+        <div class="card-header">
+            <span class="card-title">Alertas Activas</span>
+            <i class="fa-solid fa-triangle-exclamation card-icon text-red"></i>
+        </div>
+        <div class="card-value text-red">{{ alertas_activas }}</div>
+        <div class="card-indicator text-red">
+            <i class="fa-solid fa-circle-exclamation"></i> Requieren atención
+        </div>
+    </div>
+
+    <div class="card summary-card">
+        <div class="card-header">
+            <span class="card-title">Sesiones Totales</span>
+            <i class="fa-regular fa-calendar-check card-icon"></i>
+        </div>
+        <div class="card-value">{{ total_sesiones }}</div>
+        <div class="card-indicator text-gray">
+            <i class="fa-solid fa-list"></i> Registradas
+        </div>
+    </div>
+
+    <div class="card summary-card">
+        <div class="card-header">
+            <span class="card-title">Riesgos Graves</span>
+            <i class="fa-solid fa-shield-virus card-icon"></i>
+        </div>
+        <div class="card-value {% if riesgos_graves > 0 %}text-red{% else %}text-green{% endif %}">{{ riesgos_graves }}</div>
+        <div class="card-indicator {% if riesgos_graves > 0 %}text-red{% else %}text-green{% endif %}">
+            <i class="fa-solid fa-{% if riesgos_graves > 0 %}arrow-trend-up{% else %}check{% endif %}"></i>
+            {% if riesgos_graves > 0 %}Atención requerida{% else %}Sin riesgos graves{% endif %}
+        </div>
+    </div>
+
+    <!-- Gráfica de evolución emocional -->
+    <div class="card section-chart">
+        <div class="section-header">
+            <div>
+                <h3 class="section-title">Evolución Emocional General</h3>
+                <p class="section-subtitle">Puntaje emocional promedio al cierre de sesión</p>
+            </div>
+        </div>
+        <div class="chart-area">
+            <svg class="line-chart" viewBox="0 0 800 200" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="gradientFill" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.2"/>
+                        <stop offset="100%" stop-color="#3B82F6" stop-opacity="0"/>
+                    </linearGradient>
+                </defs>
+                <path d="M0,150 C150,120 250,160 400,100 C550,40 650,80 800,50 V200 H0 Z" fill="url(#gradientFill)" />
+                <path d="M0,150 C150,120 250,160 400,100 C550,40 650,80 800,50" class="chart-line" />
+                <circle cx="0" cy="150" r="4" class="chart-point" />
+                <circle cx="200" cy="135" r="4" class="chart-point" />
+                <circle cx="400" cy="100" r="4" class="chart-point" />
+                <circle cx="600" cy="65"  r="4" class="chart-point" />
+                <circle cx="800" cy="50"  r="4" class="chart-point" />
+            </svg>
+        </div>
+        <div class="chart-labels">
+            <span>Sesión 1</span><span>Sesión 2</span><span>Sesión 3</span><span>Sesión 4</span>
+        </div>
+    </div>
+
+    <!-- Sesiones recientes -->
+    <div class="card section-sessions">
+        <div class="section-header">
+            <h3 class="section-title">Sesiones Recientes</h3>
+            <a href="{{ url_for('medico_sesiones') }}" class="table-header-link">Ver todas</a>
+        </div>
+        {% if sesiones_recientes %}
+        <ul class="session-list">
+            {% for s in sesiones_recientes %}
+            <li class="session-item">
+                <div class="s-time">{{ s['fecha'] }}</div>
+                <div class="s-details">{{ s['paciente'] }} — {{ s['tipo_sesion'] }}</div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="color: var(--text-secondary); font-size: 14px;">Sin sesiones registradas.</p>
+        {% endif %}
+        <a href="{{ url_for('medico_sesion_nueva') }}" class="btn-join" style="display:inline-block; margin-top:12px; text-decoration:none; text-align:center;">
+            + Nueva Sesión
+        </a>
+    </div>
+
+    <!-- Tabla de alertas recientes -->
+    <div class="card section-table">
+        <div class="section-header">
+            <h3 class="section-title">Alertas Recientes</h3>
+            <a href="{{ url_for('medico_alertas') }}" class="table-header-link">Ver todas</a>
+        </div>
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Paciente</th>
+                    <th>Tipo</th>
+                    <th>Fecha</th>
+                    <th>Severidad</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in sesiones_recientes %}
+                <tr>
+                    <td>
+                        <div class="patient-cell">
+                            <img src="https://picsum.photos/seed/{{ loop.index }}/30/30" class="avatar">
+                            {{ s['paciente'] }}
+                        </div>
+                    </td>
+                    <td>{{ s['tipo_sesion'] }}</td>
+                    <td>{{ s['fecha'] }}</td>
+                    <td>
+                        {% if s['nivel_severidad'] == 'Grave' %}
+                            <span class="risk-badge risk-high">GRAVE</span>
+                        {% elif s['nivel_severidad'] == 'Moderado' %}
+                            <span class="risk-badge risk-moderate">MODERADO</span>
+                        {% else %}
+                            <span class="risk-badge risk-low">NORMAL</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Mapa placeholder -->
+    <div class="card section-map">
+        <div class="section-header">
+            <div>
+                <h3 class="section-title">Ubicación de Pacientes</h3>
+                <p class="section-subtitle">Monitoreo IoT en vivo</p>
+            </div>
+        </div>
+        <div class="map-placeholder">
+            <i class="fa-solid fa-location-dot map-pin"></i>
+        </div>
+    </div>
+
+</div>
 {% endblock %}
