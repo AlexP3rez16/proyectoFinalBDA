@@ -10,7 +10,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Estilos globales -->
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body class="index-page">
 
@@ -21,23 +21,20 @@
         <h1 class="role-selector-title">ElderCare System</h1>
         <p class="role-selector-subtitle">Selecciona el perfil para ingresar al demo</p>
 
-        <!-- Enlace a Médico -->
-        <a href="medico/dashboard.html" class="btn-role btn-doctor">
+        <a href="{{ url_for('medico_dashboard') }}" class="btn-role btn-doctor">
             <i class="fa-solid fa-user-doctor"></i> Entrar como Médico
         </a>
 
-        <!-- Enlace a Cuidador -->
-        <a href="cuidador/dashboard.html" class="btn-role btn-caregiver">
+        <a href="{{ url_for('cuidador_dashboard') }}" class="btn-role btn-caregiver">
             <i class="fa-solid fa-hands-holding-circle"></i> Entrar como Cuidador
         </a>
 
-        <!-- Enlace a Admin -->
-        <a href="admin/admin-dashboard.html" class="btn-role btn-admin">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn-role btn-admin">
             <i class="fa-solid fa-user-shield"></i> Entrar como Administrador
         </a>
 
         <div class="role-selector-footer">
-            <a href="login.html" class="role-login-link">O ir a pantalla de Login</a>
+            <a href="{{ url_for('login') }}" class="role-login-link">O ir a pantalla de Login</a>
         </div>
     </div>
 

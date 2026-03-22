@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ElderCare{% endblock %}</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Estilos globales -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <div class="logo-icon">
+                    <i class="fa-solid {{ sidebar.logo_icon }}"></i>
+                </div>
+                <div class="logo-title">{{ sidebar.logo_title }}</div>
+                <div class="logo-subtitle">{{ sidebar.logo_subtitle }}</div>
+            </div>
+            <ul class="nav-menu">
+                {% for item in sidebar.nav_items %}
+                <li class="nav-item">
+                    <a href="{{ url_for(item.endpoint) }}" class="nav-link{% if active == item.endpoint %} active{% endif %}">
+                        <span class="nav-icon"><i class="fa-solid {{ item.icon }}"></i></span>
+                        {{ item.label }}
+                        {% if item.get('badge') %}
+                        <span class="badge-alert">{{ item.badge }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="user-profile">
+            <img src="{{ sidebar.user_img }}" alt="{{ sidebar.user_name }}" class="avatar">
+            <div class="user-info">
+                <h4>{{ sidebar.user_name }}</h4>
+                <p>{{ sidebar.user_role }}</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="top-header">
+            <button class="icon-btn" id="menu-toggle" style="margin-right: 15px; display: none;">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" class="search-input" placeholder="{% block search_placeholder %}Buscar...{% endblock %}">
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-btn" title="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+                <button class="icon-btn" title="Notifications">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+                <div class="date-badge">{{ current_date }}</div>
+            </div>
+        </header>
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">Action completed</div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,44 +1,12 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log de Auditoría - Admin ElderCare</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link rel="stylesheet" href="../assets/css/styles.css">
-</head>
-<body class="app-layout">
+{% extends 'base.html' %}
 
-    <!-- SIDEBAR ADMINISTRATIVO -->
-    <aside class="sidebar" id="sidebar"></aside>
+{% block title %}Log de Auditoría - Admin ElderCare{% endblock %}
 
-    <!-- MAIN CONTENT -->
-    <main class="main-content">
-        <header class="top-header">
-            <button class="icon-btn" id="menu-toggle" style="margin-right: 15px; display: none;">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-            <h1 class="page-title">Log de Auditoría</h1>
-            
-            <div class="search-container">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" class="search-input" placeholder="Buscar evento, usuario o ID...">
-            </div>
+{% block page_title %}Log de Auditoría{% endblock %}
+{% block search_placeholder %}Buscar evento, usuario o ID...{% endblock %}
 
-            <div class="header-actions">
-                <button class="icon-btn"><i class="fa-solid fa-gear"></i></button>
-                <button class="icon-btn">
-                    <i class="fa-regular fa-bell"></i>
-                    <span class="notification-dot"></span>
-                </button>
-                <div class="date-badge">Dec 14, 2023</div>
-            </div>
-        </header>
-
-        <div class="audit-container">
+{% block content %}
+<div class="audit-container">
             
             <!-- FILTROS DE AUDITORÍA -->
             <div class="card audit-filters-card">
@@ -187,10 +155,4 @@
             </div>
 
         </div>
-    </main>
-
-    <div id="toast" class="toast">Action completed</div>
-    <script src="../assets/js/components.js"></script>
-    <script src="../assets/js/script.js"></script>
-</body>
-</html>
+{% endblock %}

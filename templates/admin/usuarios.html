@@ -1,48 +1,12 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Usuarios - Admin ElderCare</title>
-    
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Enlace al CSS COMPARTIDO -->
-    <link rel="stylesheet" href="../assets/css/styles.css">
-</head>
-<body class="app-layout">
+{% extends 'base.html' %}
 
-    <!-- SIDEBAR ADMINISTRATIVO -->
-    <aside class="sidebar" id="sidebar"></aside>
+{% block title %}Gestión de Usuarios - Admin ElderCare{% endblock %}
 
-    <!-- MAIN CONTENT -->
-    <main class="main-content">
-        <header class="top-header">
-            <button class="icon-btn" id="menu-toggle" style="margin-right: 15px; display: none;">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-            <h1 class="page-title">Gestión de Usuarios</h1>
-            
-            <div class="search-container">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" class="search-input" placeholder="Buscar usuario, rol o ID...">
-            </div>
+{% block page_title %}Gestión de Usuarios{% endblock %}
+{% block search_placeholder %}Buscar usuario, rol o ID...{% endblock %}
 
-            <div class="header-actions">
-                <button class="icon-btn"><i class="fa-solid fa-gear"></i></button>
-                <button class="icon-btn">
-                    <i class="fa-regular fa-bell"></i>
-                    <span class="notification-dot"></span>
-                </button>
-                <div class="date-badge">Dec 14, 2023</div>
-            </div>
-        </header>
-
-        <div class="users-container" style="padding: 32px; max-width: 1600px; margin: 0 auto;">
+{% block content %}
+<div class="users-container" style="padding: 32px; max-width: 1600px; margin: 0 auto;">
             
             <!-- Resumen Stats (Usuarios) -->
             <div class="stats-grid" style="margin-bottom: 30px;">
@@ -210,13 +174,4 @@
             </div>
 
         </div>
-    </main>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="toast">Action completed</div>
-
-    <!-- Enlace al JS COMPARTIDO -->
-    <script src="../assets/js/components.js"></script>
-    <script src="../assets/js/script.js"></script>
-</body>
-</html>
+{% endblock %}
