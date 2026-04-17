@@ -746,6 +746,17 @@ def terapeuta_incidentes():
         fetchall=True) or []
     return render_template('terapeuta/incidentes.html', incidentes=incidentes)
 
+
+@app.route('/terapeuta/incidentes/<int:id_incidente>/editar', methods=['POST'])
+@rol_required(2)
+def terapeuta_incidente_editar(id_incidente):
+    f = request.form
+    ok, msg = call_proc(
+        "CALL sp_actualizar_incidente(%s,%s,%s,%s,NULL,NULL)",
+        (id_incidente, f['tipo'], f.get('descripcion') or None, f['severidad']))
+    flash(msg, 'exito' if ok else 'error')
+    return redirect(url_for('terapeuta_incidentes'))
+
 # ═════════════════════════════════════════════════════════════════════════════
 # PORTAL CUIDADOR
 # ═════════════════════════════════════════════════════════════════════════════

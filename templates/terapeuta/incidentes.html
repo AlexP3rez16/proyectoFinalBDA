@@ -51,7 +51,7 @@
   <div class="tbl-wrap">
     <table id="inc-table">
       <thead>
-        <tr><th>Residente</th><th>Tipo</th><th>Severidad</th><th>Fecha</th><th>Descripción</th><th>Reportado por</th></tr>
+        <tr><th>Residente</th><th>Tipo</th><th>Severidad</th><th>Fecha</th><th>Descripción</th><th>Reportado por</th><th></th></tr>
       </thead>
       <tbody>
       {% for i in incidentes %}
@@ -71,12 +71,58 @@
         <td style="font-size:12px;color:var(--text-sm)">{{ i.fecha }}</td>
         <td style="font-size:12px;max-width:200px">{{ i.descripcion or '—' }}</td>
         <td style="font-size:12.5px">{{ i.reportado_por }}</td>
+        <td>
+          <button class="btn btn-ghost btn-sm" title="Editar"
+            onclick="openEditInc({{ i.id_incidente }},'{{ i.tipo|e }}','{{ (i.descripcion or '')|e }}','{{ i.severidad|e }}')">
+            <i class="fa-solid fa-pen-to-square" style="color:var(--primary)"></i>
+          </button>
+        </td>
       </tr>
       {% else %}
       <tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-shield-halved"></i><p>Sin incidentes registrados</p></div></td></tr>
       {% endfor %}
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- Modal editar incidente -->
+<div id="modal-edit-inc" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;padding:20px">
+  <div class="card" style="width:100%;max-width:500px">
+    <div class="card-header" style="padding-bottom:0">
+      <span class="card-title">Editar Incidente</span>
+      <button onclick="document.getElementById('modal-edit-inc').style.display='none'" class="btn btn-ghost btn-sm"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="card-body">
+      <form method="POST" id="form-edit-inc" action="">
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="form-group">
+            <label>Tipo *</label>
+            <select name="tipo" id="ei-tipo" required>
+              {% for t in ['Caida','Agitacion','Deambulacion','Rechazo_Medicamento','Otro'] %}
+              <option value="{{ t }}">{{ t.replace('_',' ') }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Severidad *</label>
+            <select name="severidad" id="ei-severidad" required>
+              <option value="Alta">Alta</option>
+              <option value="Media">Media</option>
+              <option value="Baja">Baja</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label>Descripción</label>
+            <textarea name="descripcion" id="ei-descripcion" rows="3"></textarea>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button type="button" onclick="document.getElementById('modal-edit-inc').style.display='none'" class="btn btn-outline">Cancelar</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -91,6 +137,14 @@ function filterSev(sev){
     r.style.display=(!sev||r.dataset.sev===sev)?'':'none';
   });
 }
+function openEditInc(id, tipo, desc, sev){
+  document.getElementById('form-edit-inc').action='/terapeuta/incidentes/'+id+'/editar';
+  document.getElementById('ei-tipo').value=tipo;
+  document.getElementById('ei-severidad').value=sev;
+  document.getElementById('ei-descripcion').value=desc;
+  document.getElementById('modal-edit-inc').style.display='flex';
+}
+document.getElementById('modal-edit-inc').addEventListener('click',function(e){if(e.target===this)this.style.display='none'});
 </script>
 {% endblock %}
 {% endblock %}

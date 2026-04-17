@@ -667,6 +667,34 @@ END;
 $$;
 
 
+-- Actualiza tipo, descripción y severidad de un incidente existente.
+CREATE OR REPLACE PROCEDURE sp_actualizar_incidente(
+    p_id_incidente  INT,
+    p_tipo          VARCHAR,
+    p_descripcion   TEXT,
+    p_severidad     VARCHAR,
+    OUT ok          INT,
+    OUT msg         TEXT
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    UPDATE reporte_incidente
+    SET tipo        = p_tipo,
+        descripcion = p_descripcion,
+        severidad   = p_severidad
+    WHERE id_incidente = p_id_incidente;
+
+    IF NOT FOUND THEN
+        ok := 0; msg := 'Incidente no encontrado.';
+    ELSE
+        ok := 1; msg := 'Incidente actualizado.';
+    END IF;
+EXCEPTION WHEN OTHERS THEN
+    ok := 0; msg := 'Error: ' || SQLERRM;
+END;
+$$;
+
+
 -- Registra un reporte de incidente.
 CREATE OR REPLACE PROCEDURE sp_registrar_incidente(
     p_id_residente  INT,
