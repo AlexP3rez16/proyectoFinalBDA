@@ -1,131 +1,123 @@
 {% extends 'base.html' %}
-
-{% block title %}Dashboard Administrativo - ElderCare{% endblock %}
-{% block page_title %}Dashboard Administrativo{% endblock %}
-{% block search_placeholder %}Buscar en el sistema...{% endblock %}
+{% block title %}Dashboard Admin{% endblock %}
+{% block page_title %}Panel de Control{% endblock %}
 
 {% block content %}
-<div class="admin-container">
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon green"><i class="fa-solid fa-users"></i></div>
+    <div><div class="stat-label">Residentes Activos</div><div class="stat-value">{{ total_residentes }}</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon blue"><i class="fa-solid fa-user-nurse"></i></div>
+    <div><div class="stat-label">Personal Activo</div><div class="stat-value">{{ total_staff }}</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    <div><div class="stat-label">Incidentes Alta (7d)</div><div class="stat-value">{{ incidentes_alta }}</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon gold"><i class="fa-solid fa-pills"></i></div>
+    <div><div class="stat-label">Medicamentos Pendientes</div><div class="stat-value">{{ medicamentos_pendientes }}</div></div>
+  </div>
+</div>
 
-    <!-- Stats -->
-    <div class="stats-grid">
-        <div class="card summary-card">
-            <div class="card-header">
-                <span class="card-title">Pacientes Activos</span>
-                <i class="fa-solid fa-users card-icon"></i>
-            </div>
-            <div class="card-value">{{ total_pacientes }}</div>
-            <div class="card-indicator text-green">
-                <i class="fa-solid fa-arrow-trend-up"></i> Registrados
-            </div>
-        </div>
+<div class="grid-2" style="gap:18px;margin-bottom:18px">
 
-        <div class="card summary-card critical-alert">
-            <div class="card-header">
-                <span class="card-title">Alertas Graves</span>
-                <i class="fa-solid fa-triangle-exclamation card-icon text-red"></i>
-            </div>
-            <div class="card-value text-red">{{ alertas_graves }}</div>
-            <div class="card-indicator text-red">
-                <i class="fa-solid fa-circle-exclamation"></i> Requieren atención
-            </div>
-        </div>
-
-        <div class="card summary-card">
-            <div class="card-header">
-                <span class="card-title">Sesiones Totales</span>
-                <i class="fa-solid fa-video card-icon"></i>
-            </div>
-            <div class="card-value">{{ total_sesiones }}</div>
-            <div class="card-indicator text-gray">
-                <i class="fa-regular fa-clock"></i> Registradas
-            </div>
-        </div>
-
-        <div class="card summary-card">
-            <div class="card-header">
-                <span class="card-title">Staff Activo</span>
-                <i class="fa-solid fa-user-doctor card-icon text-info"></i>
-            </div>
-            <div class="card-value text-green">{{ total_staff }}</div>
-            <div class="card-indicator text-green">
-                <i class="fa-solid fa-check"></i> Profesionales activos
-            </div>
-        </div>
+  <!-- Incidentes recientes -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Incidentes Recientes</span>
+      <span class="badge badge-neutral">Últimos 7 días</span>
     </div>
-
-    <!-- Alertas recientes + Log auditoría -->
-    <div class="admin-grid-2">
-        <div class="card section-alerts-list">
-            <div class="section-header">
-                <h3 class="section-title">Alertas Recientes</h3>
-                <a href="{{ url_for('admin_alertas') }}" class="table-header-link">Ver todas</a>
-            </div>
-            <div class="table-responsive">
-                <table class="custom-table">
-                    <thead>
-                        <tr>
-                            <th>Paciente</th>
-                            <th>Tipo</th>
-                            <th>Fecha</th>
-                            <th>Severidad</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for a in alertas_recientes %}
-                        <tr>
-                            <td>
-                                <div class="patient-cell">
-                                    <img src="https://picsum.photos/seed/{{ a['id_paciente'] }}/30/30" class="avatar">
-                                    {{ a['paciente'] }}
-                                </div>
-                            </td>
-                            <td>{{ a['tipo_alerta'] }}</td>
-                            <td>{{ a['fecha'] }}</td>
-                            <td>
-                                {% if a['nivel_severidad'] == 'Grave' %}
-                                    <span class="risk-badge risk-high">GRAVE</span>
-                                {% elif a['nivel_severidad'] == 'Moderado' %}
-                                    <span class="risk-badge risk-moderate">MODERADO</span>
-                                {% else %}
-                                    <span class="risk-badge risk-low">LEVE</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="4" style="text-align:center; color:var(--text-secondary);">Sin alertas activas</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="card section-audit-log">
-            <div class="section-header">
-                <h3 class="section-title">Log de Auditoría Reciente</h3>
-                <a href="{{ url_for('admin_auditoria') }}" class="table-header-link">Ver todo</a>
-            </div>
-            <div class="table-responsive">
-                <table class="custom-table audit-table">
-                    <thead>
-                        <tr><th>Usuario</th><th>Tabla</th><th>Operación</th><th>Hora</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for l in logs %}
-                        <tr>
-                            <td>{{ l['usuario'] }}</td>
-                            <td>{{ l['tabla_afectada'] }}</td>
-                            <td><span class="audit-action {{ l['operacion'] | lower }}">{{ l['operacion'] }}</span></td>
-                            <td>{{ l['hora'] }}</td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="4" style="text-align:center; color:var(--text-secondary);">Sin registros</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <div class="card-body" style="padding-top:14px">
+      {% if incidentes_recientes %}
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Residente</th><th>Tipo</th><th>Severidad</th><th>Fecha</th></tr></thead>
+          <tbody>
+          {% for i in incidentes_recientes %}
+          <tr>
+            <td><strong>{{ i.residente }}</strong><br><small style="color:var(--text-sm)">Hab. {{ i.habitacion }}</small></td>
+            <td>{{ i.tipo.replace('_',' ') }}</td>
+            <td>
+              <span class="badge {% if i.severidad=='Alta' %}badge-danger{% elif i.severidad=='Media' %}badge-warning{% else %}badge-success{% endif %}">
+                {{ i.severidad }}
+              </span>
+            </td>
+            <td style="color:var(--text-sm);font-size:12px">{{ i.fecha }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state"><i class="fa-solid fa-circle-check"></i><p>Sin incidentes recientes</p></div>
+      {% endif %}
     </div>
+  </div>
 
+  <!-- Staff en turno hoy -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Staff en Turno Hoy</span>
+      <span class="badge badge-info">{{ staff_turno|length }} personas</span>
+    </div>
+    <div class="card-body" style="padding-top:14px">
+      {% if staff_turno %}
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Personal</th><th>Ala</th><th>Horario</th></tr></thead>
+          <tbody>
+          {% for s in staff_turno %}
+          <tr>
+            <td><strong>{{ s.staff }}</strong><br><small style="color:var(--text-sm)">{{ s.rol }}</small></td>
+            <td>{{ s.ala }}</td>
+            <td style="font-size:12px;color:var(--text-sm)">{{ s.hora_inicio }} – {{ s.hora_fin }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state"><i class="fa-solid fa-moon"></i><p>Sin turnos registrados hoy</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Sesiones hoy -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Sesiones de Terapia — Hoy</span>
+    <a href="{{ url_for('terapeuta_sesiones') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ver todas</a>
+  </div>
+  <div class="card-body" style="padding-top:14px">
+    {% if sesiones_hoy %}
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Residente</th><th>Terapeuta</th><th>Sala</th><th>Tipo</th><th>Hora</th><th>Asistió</th></tr></thead>
+        <tbody>
+        {% for s in sesiones_hoy %}
+        <tr>
+          <td><strong>{{ s.residente }}</strong></td>
+          <td>{{ s.terapeuta }}</td>
+          <td>{{ s.sala }}</td>
+          <td><span class="badge badge-info">{{ s.tipo_sesion }}</span></td>
+          <td style="color:var(--text-sm);font-size:12px">{{ s.hora }}</td>
+          <td>
+            <span class="badge {% if s.asistio %}badge-success{% else %}badge-danger{% endif %}">
+              {{ 'Sí' if s.asistio else 'No' }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="fa-solid fa-calendar-xmark"></i><p>No hay sesiones programadas para hoy</p></div>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}

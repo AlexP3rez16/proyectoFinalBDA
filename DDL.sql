@@ -1,375 +1,362 @@
 -- ============================================================
---  PLATAFORMA DE SALUD MENTAL PARA ADULTOS MAYORES
+--  SISTEMA DE GESTIÓN DE ASILO — SALUD MENTAL ADULTOS MAYORES
 --  EQUIPO 5 — BASE DE DATOS AVANZADAS — UDEM
---  FASE 2 — Script DDL PostgreSQL
+--  DDL PostgreSQL (Scope Final: Asilo)
+-- ============================================================
+-- PASO 1: Crear la base de datos (ejecutar como superusuario)
+--   CREATE DATABASE asilo_db;
+--   CREATE USER equipo5proyfin WITH PASSWORD '123';
+--   GRANT ALL PRIVILEGES ON DATABASE asilo_db TO equipo5proyfin;
+-- PASO 2: Conectarse a asilo_db y ejecutar este script.
 -- ============================================================
 
--- ============================================================
--- CREAR BASE DE DATOS
--- ============================================================
--- USUARIO = equipo5proyfin
-
-CREATE DATABASE salud_mental_db;
-
--- \c salud_mental_db
 
 -- ============================================================
--- TABLAS MAESTRAS
+-- TABLAS MAESTRAS / CATÁLOGOS
 -- ============================================================
 
 CREATE TABLE rol (
-    id_rol serial primary key,
-    nombre_rol  varchar(50) NOT NULL,
-    descripcion TEXT,
-    nivel_acceso  int NOT NULL CHECK (nivel_acceso BETWEEN 1 AND 3),
+    id_rol          SERIAL PRIMARY KEY,
+    nombre_rol      VARCHAR(50)  NOT NULL,
+    nivel_acceso    INT          NOT NULL CHECK (nivel_acceso BETWEEN 1 AND 3),
+    -- 1 = Administrador, 2 = Terapeuta/Médico, 3 = Cuidador
     CONSTRAINT uq_rol_nombre UNIQUE (nombre_rol)
 );
 
-CREATE TABLE cuidador (
-    id_cuidador serial primary key,
-    nombre varchar(100) NOT NULL,
-    apellidos varchar(100) NOT NULL,
-    telefono varchar(15),
-    email varchar(100),
-    turno varchar(20)  NOT NULL CHECK (turno IN ('Matutino','Vespertino','Nocturno')),
-    activo boolean NOT NULL DEFAULT TRUE,
-    fecha_alta DATE NOT NULL DEFAULT CURRENT_DATE
+CREATE TABLE ala (
+    id_ala          SERIAL PRIMARY KEY,
+    nombre          VARCHAR(80)  NOT NULL,
+    piso            INT          NOT NULL DEFAULT 1 CHECK (piso > 0),
+    descripcion     TEXT,
+    activa          BOOLEAN      NOT NULL DEFAULT TRUE,
+    CONSTRAINT uq_ala_nombre UNIQUE (nombre)
 );
 
-CREATE TABLE escala_clinica (
-    id_escala varchar(20) primary key,
-    nombre_escala varchar(80) NOT NULL,
-    tipo varchar(50) NOT NULL CHECK (tipo IN ('Depresion','Cognitivo','Funcionalidad','Ansiedad')),
-    num_reactivos int NOT NULL CHECK (num_reactivos > 0),
-    puntaje_min int NOT NULL,
-    puntaje_max int NOT NULL,
-    descripcion TEXT,
-    CONSTRAINT uq_escala_nombre UNIQUE (nombre_escala),
-    CONSTRAINT ck_escala_rango  CHECK  (puntaje_min < puntaje_max)
+CREATE TABLE sala (
+    id_sala         SERIAL PRIMARY KEY,
+    nombre          VARCHAR(80)  NOT NULL,
+    id_ala          INT          NOT NULL,
+    capacidad       INT          NOT NULL DEFAULT 1 CHECK (capacidad > 0),
+    CONSTRAINT uq_sala_nombre UNIQUE (nombre),
+    CONSTRAINT fk_sala_ala FOREIGN KEY (id_ala)
+        REFERENCES ala(id_ala) ON UPDATE CASCADE
 );
 
-CREATE TABLE zona (
-    id_zona serial primary key,
-    nombre_zona varchar(80) NOT NULL,
-    descripcion TEXT,
-    activa boolean NOT NULL DEFAULT TRUE,
-    CONSTRAINT uq_zona_nombre UNIQUE (nombre_zona)
+-- Tabla de configuración del jardín (una sola fila)
+CREATE TABLE limite_jardin (
+    id_limite       SERIAL PRIMARY KEY,
+    descripcion     VARCHAR(100),
+    lat_min         DECIMAL(10,7) NOT NULL,
+    lat_max         DECIMAL(10,7) NOT NULL,
+    lon_min         DECIMAL(10,7) NOT NULL,
+    lon_max         DECIMAL(10,7) NOT NULL,
+    CONSTRAINT ck_lat CHECK (lat_min < lat_max),
+    CONSTRAINT ck_lon CHECK (lon_min < lon_max)
 );
+
+CREATE TABLE medicamento (
+    id_medicamento  SERIAL PRIMARY KEY,
+    nombre          VARCHAR(100) NOT NULL,
+    descripcion     TEXT,
+    unidad          VARCHAR(20)  NOT NULL DEFAULT 'mg',
+    CONSTRAINT uq_medicamento_nombre UNIQUE (nombre)
+);
+
 
 -- ============================================================
--- TABLAS QUE DEPENDEN DE LAS MAESTRAS
+-- PERSONAS
 -- ============================================================
 
-CREATE TABLE paciente (
-    id_paciente serial primary key,
-    nombre varchar(100) NOT NULL,
-    apellidos varchar(100) NOT NULL,
-    fecha_nacimiento DATE NOT NULL,
-    sexo CHAR(1) NOT NULL,
-    curp varchar(18),
-    telefono varchar(15),
-    email varchar(100),
+CREATE TABLE staff (
+    id_staff        SERIAL PRIMARY KEY,
+    nombre          VARCHAR(100) NOT NULL,
+    apellidos       VARCHAR(100) NOT NULL,
+    especialidad    VARCHAR(80)  NOT NULL,
+    email           VARCHAR(100) NOT NULL,
+    id_rol          INT          NOT NULL,
+    activo          BOOLEAN      NOT NULL DEFAULT TRUE,
+    fecha_alta      DATE         NOT NULL DEFAULT CURRENT_DATE,
+    CONSTRAINT uq_staff_email UNIQUE (email),
+    CONSTRAINT fk_staff_rol FOREIGN KEY (id_rol)
+        REFERENCES rol(id_rol) ON UPDATE CASCADE
+);
+
+-- Auth desacoplada de la identidad clínica
+CREATE TABLE usuario_sistema (
+    id_usuario      SERIAL PRIMARY KEY,
+    username        VARCHAR(50)  NOT NULL,
+    password_hash   VARCHAR(255) NOT NULL,
+    id_staff        INT          NOT NULL,
+    activo          BOOLEAN      NOT NULL DEFAULT TRUE,
+    ultimo_login    TIMESTAMP,
+    CONSTRAINT uq_usuario_username UNIQUE (username),
+    CONSTRAINT fk_usuario_staff FOREIGN KEY (id_staff)
+        REFERENCES staff(id_staff) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE residente (
+    id_residente        SERIAL PRIMARY KEY,
+    nombre              VARCHAR(100) NOT NULL,
+    apellidos           VARCHAR(100) NOT NULL,
+    fecha_nacimiento    DATE         NOT NULL,
+    sexo                CHAR(1)      NOT NULL CHECK (sexo IN ('M', 'F')),
+    habitacion          VARCHAR(10),
     diagnostico_principal TEXT,
-    id_cuidador int,
-    fecha_registro TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT uq_paciente_curp  UNIQUE  (curp),
-    CONSTRAINT ck_paciente_sexo  CHECK   (sexo IN ('M','F')),
-    CONSTRAINT ck_paciente_edad  CHECK   (fecha_nacimiento <= CURRENT_DATE - INTERVAL '60 years'),
-    CONSTRAINT fk_paciente_cuidador FOREIGN KEY (id_cuidador)
-    REFERENCES cuidador(id_cuidador) ON UPDATE CASCADE
-    ON DELETE SET NULL
+    nivel_movilidad     VARCHAR(20)  NOT NULL DEFAULT 'Autonomo'
+                        CHECK (nivel_movilidad IN ('Autonomo', 'Asistido', 'Encamado')),
+    contacto_emergencia VARCHAR(100),
+    tel_emergencia      VARCHAR(15),
+    fecha_ingreso       DATE         NOT NULL DEFAULT CURRENT_DATE,
+    activo              BOOLEAN      NOT NULL DEFAULT TRUE,
+    CONSTRAINT ck_residente_edad CHECK (fecha_nacimiento <= CURRENT_DATE - INTERVAL '60 years')
 );
 
-CREATE TABLE profesional (
-    id_profesional serial primary key,
-    nombre varchar(100) NOT NULL,
-    apellidos varchar(100) NOT NULL,
-    cedula varchar(20)  NOT NULL,
-    especialidad varchar(80)  NOT NULL,
-    email varchar(100) NOT NULL,
-    id_rol int NOT NULL,
-    activo boolean NOT NULL DEFAULT TRUE,
-    fecha_alta DATE NOT NULL DEFAULT CURRENT_DATE,
-    CONSTRAINT uq_profesional_cedula UNIQUE (cedula),
-    CONSTRAINT uq_profesional_email  UNIQUE (email),
-    CONSTRAINT fk_profesional_rol FOREIGN KEY (id_rol)
-        REFERENCES rol(id_rol)
-        ON UPDATE CASCADE
+-- N:M residente <-> staff (cuidadores y terapeutas asignados)
+CREATE TABLE asignacion (
+    id_asignacion   SERIAL PRIMARY KEY,
+    id_residente    INT          NOT NULL,
+    id_staff        INT          NOT NULL,
+    tipo_rol        VARCHAR(20)  NOT NULL CHECK (tipo_rol IN ('Cuidador', 'Terapeuta', 'Medico')),
+    fecha_inicio    DATE         NOT NULL DEFAULT CURRENT_DATE,
+    fecha_fin       DATE,
+    es_principal    BOOLEAN      NOT NULL DEFAULT FALSE,
+    CONSTRAINT ck_asignacion_fechas CHECK (fecha_fin IS NULL OR fecha_fin > fecha_inicio),
+    CONSTRAINT fk_asignacion_residente FOREIGN KEY (id_residente)
+        REFERENCES residente(id_residente) ON UPDATE CASCADE,
+    CONSTRAINT fk_asignacion_staff FOREIGN KEY (id_staff)
+        REFERENCES staff(id_staff) ON UPDATE CASCADE
 );
 
-CREATE TABLE umbral_alerta (
-    id_umbral serial primary key,
-    id_escala varchar(20) NOT NULL,
-    nivel_riesgo varchar(20) NOT NULL,
-    puntaje_minimo int NOT NULL,
-    puntaje_maximo int NOT NULL,
-    descripcion TEXT,
-    activo boolean NOT NULL DEFAULT TRUE,
-    CONSTRAINT ck_umbral_rango CHECK  (puntaje_minimo <= puntaje_maximo),
-    CONSTRAINT ck_umbral_nivel CHECK  (nivel_riesgo IN ('Normal','Leve','Moderado','Grave')),
-    CONSTRAINT uq_umbral_escala_nivel UNIQUE (id_escala, nivel_riesgo),
-    CONSTRAINT fk_umbral_escala FOREIGN KEY (id_escala)
-        REFERENCES escala_clinica(id_escala)
-        ON UPDATE CASCADE
-);
+CREATE INDEX idx_asignacion_residente ON asignacion (id_residente);
+CREATE INDEX idx_asignacion_staff     ON asignacion (id_staff);
 
-CREATE TABLE dispositivo_iot (
-    id_dispositivo serial primary key,
-    tipo_dispositivo varchar(10)  NOT NULL,
-    identificador_hw varchar(100) NOT NULL,
-    id_paciente int,
-    estado varchar(20)  NOT NULL DEFAULT 'Activo',
-    ultima_conexion TIMESTAMP,
-    fecha_registro DATE NOT NULL DEFAULT CURRENT_DATE,
-    CONSTRAINT uq_dispositivo_hw UNIQUE (identificador_hw),
-    CONSTRAINT ck_dispositivo_tipo CHECK  (tipo_dispositivo IN ('GPS','NFC','Beacon')),
-    CONSTRAINT ck_dispositivo_estado CHECK (estado IN ('Activo','Inactivo','Mantenimiento')),
-    CONSTRAINT fk_dispositivo_paciente FOREIGN KEY (id_paciente)
-        REFERENCES paciente(id_paciente)
-        ON UPDATE CASCADE
-        ON DELETE SET NULL
-);
 
 -- ============================================================
--- TABLAS TRANSACCIONALES CLÍNICAS
+-- OPERACIONES CLÍNICAS Y DE CUIDADO
 -- ============================================================
 
-CREATE TABLE sesion_psicologica (
-    id_sesion serial primary key,
-    id_paciente int NOT NULL,
-    id_profesional int NOT NULL,
-    fecha_sesion TIMESTAMP   NOT NULL,
-    tipo_sesion varchar(20) NOT NULL,
-    duracion_min int,
-    notas_clinicas TEXT,
-    estado_emoc_inicio int,
-    estado_emoc_fin int,
-    diagnostico_sesion TEXT,
-    plan_siguiente TEXT,
-    CONSTRAINT ck_sesion_tipo CHECK (tipo_sesion IN ('Individual','Grupal','Virtual')),
-    CONSTRAINT ck_sesion_duracion CHECK (duracion_min > 0 AND duracion_min <= 480),
-    CONSTRAINT ck_sesion_emoc_inicio CHECK (estado_emoc_inicio BETWEEN 1 AND 10),
-    CONSTRAINT ck_sesion_emoc_fin CHECK (estado_emoc_fin    BETWEEN 1 AND 10),
-    CONSTRAINT fk_sesion_paciente FOREIGN KEY (id_paciente)
-        REFERENCES paciente(id_paciente)
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_sesion_profesional FOREIGN KEY (id_profesional)
-        REFERENCES profesional(id_profesional)
-        ON UPDATE CASCADE
+CREATE TABLE turno (
+    id_turno        SERIAL PRIMARY KEY,
+    id_staff        INT          NOT NULL,
+    id_ala          INT          NOT NULL,
+    fecha           DATE         NOT NULL,
+    hora_inicio     TIME         NOT NULL,
+    hora_fin        TIME         NOT NULL,
+    CONSTRAINT ck_turno_horas CHECK (hora_fin > hora_inicio),
+    CONSTRAINT fk_turno_staff FOREIGN KEY (id_staff)
+        REFERENCES staff(id_staff) ON UPDATE CASCADE,
+    CONSTRAINT fk_turno_ala FOREIGN KEY (id_ala)
+        REFERENCES ala(id_ala) ON UPDATE CASCADE
 );
 
-CREATE INDEX idx_sesion_paciente ON sesion_psicologica (id_paciente);
-CREATE INDEX idx_sesion_profesional ON sesion_psicologica (id_profesional);
-CREATE INDEX idx_sesion_fecha ON sesion_psicologica (fecha_sesion DESC);
+CREATE INDEX idx_turno_staff ON turno (id_staff, fecha);
+CREATE INDEX idx_turno_ala   ON turno (id_ala, fecha);
 
-CREATE TABLE aplicacion_escala (
-    id_aplicacion serial primary key,
-    id_sesion int NOT NULL,
-    id_escala varchar(20) NOT NULL,
-    id_paciente int NOT NULL,
-    id_profesional int NOT NULL,
-    fecha_aplicacion TIMESTAMP NOT NULL DEFAULT NOW(),
-    puntaje_total int NOT NULL,
-    interpretacion varchar(100),
-    nivel_riesgo varchar(20) NOT NULL,
-    observaciones TEXT,
-    CONSTRAINT ck_aplic_puntaje CHECK (puntaje_total >= 0),
-    CONSTRAINT ck_aplic_nivel CHECK (nivel_riesgo IN ('Normal','Leve','Moderado','Grave')),
-    CONSTRAINT fk_aplic_sesion FOREIGN KEY (id_sesion)
-        REFERENCES sesion_psicologica(id_sesion)
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_aplic_escala FOREIGN KEY (id_escala)
-        REFERENCES escala_clinica(id_escala)
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_aplic_paciente FOREIGN KEY (id_paciente)
-        REFERENCES paciente(id_paciente)
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_aplic_profesional FOREIGN KEY (id_profesional)
-        REFERENCES profesional(id_profesional)
-        ON UPDATE CASCADE
+CREATE TABLE sesion_terapia (
+    id_sesion       SERIAL PRIMARY KEY,
+    id_residente    INT          NOT NULL,
+    id_terapeuta    INT          NOT NULL,
+    id_sala         INT          NOT NULL,
+    fecha_sesion    TIMESTAMP    NOT NULL,
+    tipo_sesion     VARCHAR(20)  NOT NULL CHECK (tipo_sesion IN ('Individual', 'Grupal', 'Virtual')),
+    duracion_min    INT          NOT NULL CHECK (duracion_min > 0 AND duracion_min <= 480),
+    asistio         BOOLEAN      NOT NULL DEFAULT TRUE,
+    notas           TEXT,
+    CONSTRAINT fk_sesion_residente  FOREIGN KEY (id_residente)
+        REFERENCES residente(id_residente) ON UPDATE CASCADE,
+    CONSTRAINT fk_sesion_terapeuta  FOREIGN KEY (id_terapeuta)
+        REFERENCES staff(id_staff) ON UPDATE CASCADE,
+    CONSTRAINT fk_sesion_sala       FOREIGN KEY (id_sala)
+        REFERENCES sala(id_sala) ON UPDATE CASCADE
 );
 
-CREATE INDEX idx_aplic_paciente ON aplicacion_escala (id_paciente);
-CREATE INDEX idx_aplic_escala   ON aplicacion_escala (id_escala);
-CREATE INDEX idx_aplic_fecha    ON aplicacion_escala (fecha_aplicacion DESC);
+CREATE INDEX idx_sesion_residente ON sesion_terapia (id_residente);
+CREATE INDEX idx_sesion_terapeuta ON sesion_terapia (id_terapeuta);
+CREATE INDEX idx_sesion_fecha     ON sesion_terapia (fecha_sesion DESC);
 
-CREATE TABLE respuesta_reactivo (
-    id_respuesta serial primary key,
-    id_aplicacion int NOT NULL,
-    num_reactivo int NOT NULL,
-    texto_reactivo TEXT NOT NULL,
-    valor_respuesta int NOT NULL,
-    texto_respuesta varchar(100),
-    CONSTRAINT ck_reactivo_num CHECK  (num_reactivo    >= 1),
-    CONSTRAINT ck_reactivo_valor CHECK  (valor_respuesta >= 0),
-    CONSTRAINT uq_reactivo_aplicacion UNIQUE (id_aplicacion, num_reactivo),
-    CONSTRAINT fk_reactivo_aplicacion FOREIGN KEY (id_aplicacion)
-        REFERENCES aplicacion_escala(id_aplicacion)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE
+CREATE TABLE checkin_estado_animo (
+    id_checkin      SERIAL PRIMARY KEY,
+    id_residente    INT          NOT NULL,
+    id_cuidador     INT          NOT NULL,
+    fecha_registro  TIMESTAMP    NOT NULL DEFAULT NOW(),
+    puntaje         INT          NOT NULL CHECK (puntaje BETWEEN 1 AND 5),
+    notas           TEXT,
+    CONSTRAINT fk_checkin_residente FOREIGN KEY (id_residente)
+        REFERENCES residente(id_residente) ON UPDATE CASCADE,
+    CONSTRAINT fk_checkin_cuidador  FOREIGN KEY (id_cuidador)
+        REFERENCES staff(id_staff) ON UPDATE CASCADE
 );
 
-CREATE TABLE alerta_riesgo (
-    id_alerta serial primary key,
-    id_paciente int NOT NULL,
-    id_aplicacion int NOT NULL,
-    tipo_alerta varchar(80) NOT NULL,
-    nivel_severidad varchar(20) NOT NULL,
-    descripcion TEXT,
-    fecha_generacion TIMESTAMP NOT NULL DEFAULT NOW(),
-    estado_alerta varchar(20) NOT NULL DEFAULT 'Activa',
-    id_prof_atiende  int,
-    fecha_resolucion TIMESTAMP,
-    acciones_tomadas TEXT,
-    CONSTRAINT ck_alerta_severidad CHECK (nivel_severidad IN ('Leve','Moderado','Grave')),
-    CONSTRAINT ck_alerta_estado CHECK (estado_alerta IN ('Activa','Revisada','Cerrada')),
-    CONSTRAINT ck_alerta_resolucion  CHECK (estado_alerta != 'Cerrada' OR fecha_resolucion IS NOT NULL),
-    CONSTRAINT fk_alerta_paciente FOREIGN KEY (id_paciente)
-        REFERENCES paciente(id_paciente)
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_alerta_aplicacion FOREIGN KEY (id_aplicacion)
-        REFERENCES aplicacion_escala(id_aplicacion)
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_alerta_profesional FOREIGN KEY (id_prof_atiende)
-        REFERENCES profesional(id_profesional)
-        ON UPDATE CASCADE
+CREATE INDEX idx_checkin_residente ON checkin_estado_animo (id_residente, fecha_registro DESC);
+
+CREATE TABLE reporte_incidente (
+    id_incidente    SERIAL PRIMARY KEY,
+    id_residente    INT          NOT NULL,
+    id_staff        INT          NOT NULL,
+    fecha           TIMESTAMP    NOT NULL DEFAULT NOW(),
+    tipo            VARCHAR(30)  NOT NULL
+                    CHECK (tipo IN ('Caida', 'Agitacion', 'Deambulacion', 'Rechazo_Medicamento', 'Otro')),
+    descripcion     TEXT         NOT NULL,
+    severidad       VARCHAR(10)  NOT NULL CHECK (severidad IN ('Baja', 'Media', 'Alta')),
+    CONSTRAINT fk_incidente_residente FOREIGN KEY (id_residente)
+        REFERENCES residente(id_residente) ON UPDATE CASCADE,
+    CONSTRAINT fk_incidente_staff     FOREIGN KEY (id_staff)
+        REFERENCES staff(id_staff) ON UPDATE CASCADE
 );
 
-CREATE INDEX idx_alerta_paciente ON alerta_riesgo (id_paciente);
-CREATE INDEX idx_alerta_estado   ON alerta_riesgo (estado_alerta);
+CREATE INDEX idx_incidente_residente ON reporte_incidente (id_residente);
+CREATE INDEX idx_incidente_fecha      ON reporte_incidente (fecha DESC);
 
-CREATE TABLE evolucion_emocional (
-    id_evolucion serial primary key,
-    id_paciente int NOT NULL,
-    id_sesion int NOT NULL,
-    fecha_registro DATE NOT NULL DEFAULT CURRENT_DATE,
-    puntaje_emocional int NOT NULL,
-    etiqueta_estado varchar(50),
-    notas_profesional TEXT,
-    CONSTRAINT ck_evolucion_puntaje CHECK (puntaje_emocional BETWEEN 1 AND 10),
-    CONSTRAINT uq_evolucion_sesion  UNIQUE (id_sesion),
-    CONSTRAINT fk_evolucion_paciente FOREIGN KEY (id_paciente)
-        REFERENCES paciente(id_paciente)
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_evolucion_sesion FOREIGN KEY (id_sesion)
-        REFERENCES sesion_psicologica(id_sesion)
-        ON UPDATE CASCADE
-);
-
-CREATE INDEX idx_evolucion_paciente ON evolucion_emocional (id_paciente);
-
-CREATE TABLE observacion_cuidador (
-    id_observacion serial primary key,
-    id_cuidador int NOT NULL,
-    id_paciente int NOT NULL,
-    fecha_observacion TIMESTAMP  NOT NULL DEFAULT NOW(),
-    descripcion TEXT NOT NULL,
-    nivel_agitacion int,
-    incidencias TEXT,
-    CONSTRAINT ck_obs_agitacion CHECK (nivel_agitacion BETWEEN 1 AND 5),
-    CONSTRAINT fk_obs_cuidador FOREIGN KEY (id_cuidador)
-        REFERENCES cuidador(id_cuidador)
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_obs_paciente FOREIGN KEY (id_paciente)
-        REFERENCES paciente(id_paciente)
-        ON UPDATE CASCADE
-);
-
-CREATE INDEX idx_obs_paciente ON observacion_cuidador (id_paciente);
 
 -- ============================================================
--- TABLAS DE EVENTOS IoT
+-- MEDICAMENTOS
 -- ============================================================
 
-CREATE TABLE evento_gps (
-    id_evento_gps BIGSERIAL primary key,
-    id_dispositivo int NOT NULL,
-    id_paciente int NOT NULL,
-    latitud DECIMAL(10,7) NOT NULL,
-    longitud DECIMAL(10,7) NOT NULL,
-    altitud DECIMAL(8,2),
-    precision_m DECIMAL(6,2),
-    timestamp_evento TIMESTAMP NOT NULL DEFAULT NOW(),
-    dentro_zona_segura boolean NOT NULL DEFAULT TRUE,
-    CONSTRAINT ck_gps_latitud CHECK (latitud    BETWEEN -90  AND  90),
-    CONSTRAINT ck_gps_longitud CHECK (longitud   BETWEEN -180 AND 180),
-    CONSTRAINT ck_gps_precision CHECK (precision_m >= 0),
-    CONSTRAINT fk_gps_dispositivo FOREIGN KEY (id_dispositivo)
-        REFERENCES dispositivo_iot(id_dispositivo)
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_gps_paciente FOREIGN KEY (id_paciente)
-        REFERENCES paciente(id_paciente)
-        ON UPDATE CASCADE
+CREATE TABLE horario_medicamento (
+    id_horario      SERIAL PRIMARY KEY,
+    id_residente    INT          NOT NULL,
+    id_medicamento  INT          NOT NULL,
+    hora_programada TIME         NOT NULL,
+    dosis           VARCHAR(30)  NOT NULL,
+    frecuencia      VARCHAR(20)  NOT NULL
+                    CHECK (frecuencia IN ('Diaria', 'Semanal', 'Mensual', 'Condicional')),
+    activo          BOOLEAN      NOT NULL DEFAULT TRUE,
+    CONSTRAINT fk_horario_residente   FOREIGN KEY (id_residente)
+        REFERENCES residente(id_residente) ON UPDATE CASCADE,
+    CONSTRAINT fk_horario_medicamento FOREIGN KEY (id_medicamento)
+        REFERENCES medicamento(id_medicamento) ON UPDATE CASCADE
 );
 
-CREATE INDEX idx_gps_paciente  ON evento_gps (id_paciente);
-CREATE INDEX idx_gps_timestamp ON evento_gps (timestamp_evento DESC);
+CREATE INDEX idx_horario_residente ON horario_medicamento (id_residente);
 
-CREATE TABLE evento_nfc (
-    id_evento_nfc BIGSERIAL primary key,
-    id_dispositivo int NOT NULL,
-    id_paciente int NOT NULL,
-    id_zona int NOT NULL,
-    tipo_evento varchar(20) NOT NULL,
-    timestamp_evento TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT ck_nfc_tipo CHECK (tipo_evento IN ('Entrada','Salida','Interaccion')),
-    CONSTRAINT fk_nfc_dispositivo FOREIGN KEY (id_dispositivo)
-        REFERENCES dispositivo_iot(id_dispositivo)
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_nfc_paciente FOREIGN KEY (id_paciente)
-        REFERENCES paciente(id_paciente)
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_nfc_zona FOREIGN KEY (id_zona)
-        REFERENCES zona(id_zona)
-        ON UPDATE CASCADE
+CREATE TABLE log_medicamento (
+    id_log                  SERIAL PRIMARY KEY,
+    id_horario              INT          NOT NULL,
+    id_cuidador             INT          NOT NULL,
+    fecha_administracion    TIMESTAMP    NOT NULL DEFAULT NOW(),
+    incidente               TEXT,
+    CONSTRAINT fk_log_horario   FOREIGN KEY (id_horario)
+        REFERENCES horario_medicamento(id_horario) ON UPDATE CASCADE,
+    CONSTRAINT fk_log_cuidador  FOREIGN KEY (id_cuidador)
+        REFERENCES staff(id_staff) ON UPDATE CASCADE
 );
 
-CREATE INDEX idx_nfc_paciente  ON evento_nfc (id_paciente);
-CREATE INDEX idx_nfc_zona      ON evento_nfc (id_zona);
-CREATE INDEX idx_nfc_timestamp ON evento_nfc (timestamp_evento DESC);
+CREATE INDEX idx_log_medicamento_horario ON log_medicamento (id_horario);
+CREATE INDEX idx_log_medicamento_fecha   ON log_medicamento (fecha_administracion DESC);
 
-CREATE TABLE evento_beacon (
-    id_evento_beacon BIGSERIAL primary key,
-    id_dispositivo int NOT NULL,
-    id_paciente int NOT NULL,
-    id_zona int NOT NULL,
-    distancia_m DECIMAL(6,2),
-    rssi int,
-    timestamp_evento TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT ck_beacon_distancia CHECK (distancia_m >= 0),
-    CONSTRAINT ck_beacon_rssi CHECK (rssi BETWEEN -120 AND 0),
-    CONSTRAINT fk_beacon_dispositivo FOREIGN KEY (id_dispositivo)
-        REFERENCES dispositivo_iot(id_dispositivo)
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_beacon_paciente FOREIGN KEY (id_paciente)
-        REFERENCES paciente(id_paciente)
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_beacon_zona FOREIGN KEY (id_zona)
-        REFERENCES zona(id_zona)
-        ON UPDATE CASCADE
-);
-
-CREATE INDEX idx_beacon_paciente  ON evento_beacon (id_paciente);
-CREATE INDEX idx_beacon_zona      ON evento_beacon (id_zona);
-CREATE INDEX idx_beacon_timestamp ON evento_beacon (timestamp_evento DESC);
 
 -- ============================================================
--- TABLA DE AUDITORÍA
+-- IOT
+-- ============================================================
+
+-- GPS — monitoreo exterior (jardín / patio)
+CREATE TABLE gps_ping (
+    id_ping         BIGSERIAL PRIMARY KEY,
+    id_residente    INT           NOT NULL,
+    latitud         DECIMAL(10,7) NOT NULL CHECK (latitud  BETWEEN -90  AND  90),
+    longitud        DECIMAL(10,7) NOT NULL CHECK (longitud BETWEEN -180 AND 180),
+    registrado_en   TIMESTAMP     NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_gps_residente FOREIGN KEY (id_residente)
+        REFERENCES residente(id_residente) ON UPDATE CASCADE
+);
+
+CREATE INDEX idx_gps_residente ON gps_ping (id_residente, registrado_en DESC);
+
+-- NFC — estaciones de medicamentos
+CREATE TABLE nfc_tag (
+    id_tag          SERIAL PRIMARY KEY,
+    codigo_tag      VARCHAR(50)  NOT NULL,
+    id_residente    INT          NOT NULL,
+    descripcion     VARCHAR(100),
+    CONSTRAINT uq_nfc_codigo UNIQUE (codigo_tag),
+    CONSTRAINT fk_nfc_residente FOREIGN KEY (id_residente)
+        REFERENCES residente(id_residente) ON UPDATE CASCADE
+);
+
+CREATE TABLE nfc_evento (
+    id_evento       BIGSERIAL PRIMARY KEY,
+    id_tag          INT          NOT NULL,
+    id_staff        INT          NOT NULL,
+    escaneado_en    TIMESTAMP    NOT NULL DEFAULT NOW(),
+    id_log_med      BIGINT,
+    CONSTRAINT fk_nfc_evento_tag   FOREIGN KEY (id_tag)
+        REFERENCES nfc_tag(id_tag) ON UPDATE CASCADE,
+    CONSTRAINT fk_nfc_evento_staff FOREIGN KEY (id_staff)
+        REFERENCES staff(id_staff) ON UPDATE CASCADE,
+    CONSTRAINT fk_nfc_evento_log   FOREIGN KEY (id_log_med)
+        REFERENCES log_medicamento(id_log) ON UPDATE CASCADE
+);
+
+CREATE INDEX idx_nfc_evento_tag ON nfc_evento (id_tag, escaneado_en DESC);
+
+-- RFID — control de acceso a áreas restringidas
+CREATE TABLE lector_rfid (
+    id_lector       SERIAL PRIMARY KEY,
+    ubicacion       VARCHAR(100) NOT NULL,
+    es_restringido  BOOLEAN      NOT NULL DEFAULT TRUE,
+    id_ala          INT,
+    id_sala         INT,
+    CONSTRAINT fk_lector_ala  FOREIGN KEY (id_ala)
+        REFERENCES ala(id_ala) ON UPDATE CASCADE,
+    CONSTRAINT fk_lector_sala FOREIGN KEY (id_sala)
+        REFERENCES sala(id_sala) ON UPDATE CASCADE
+);
+
+CREATE TABLE acceso_rfid (
+    id_acceso           BIGSERIAL PRIMARY KEY,
+    id_lector           INT          NOT NULL,
+    id_staff            INT          NOT NULL,
+    accedido_en         TIMESTAMP    NOT NULL DEFAULT NOW(),
+    acceso_concedido    BOOLEAN      NOT NULL DEFAULT TRUE,
+    CONSTRAINT fk_acceso_lector FOREIGN KEY (id_lector)
+        REFERENCES lector_rfid(id_lector) ON UPDATE CASCADE,
+    CONSTRAINT fk_acceso_staff  FOREIGN KEY (id_staff)
+        REFERENCES staff(id_staff) ON UPDATE CASCADE
+);
+
+CREATE INDEX idx_acceso_rfid_lector ON acceso_rfid (id_lector, accedido_en DESC);
+CREATE INDEX idx_acceso_rfid_staff  ON acceso_rfid (id_staff, accedido_en DESC);
+
+-- Beacon (BLE) — detección de presencia de staff por ala
+CREATE TABLE beacon (
+    id_beacon       SERIAL PRIMARY KEY,
+    id_ala          INT          NOT NULL,
+    nombre          VARCHAR(80)  NOT NULL,
+    CONSTRAINT uq_beacon_nombre UNIQUE (nombre),
+    CONSTRAINT fk_beacon_ala FOREIGN KEY (id_ala)
+        REFERENCES ala(id_ala) ON UPDATE CASCADE
+);
+
+CREATE TABLE deteccion_beacon (
+    id_deteccion    BIGSERIAL PRIMARY KEY,
+    id_beacon       INT          NOT NULL,
+    id_staff        INT          NOT NULL,
+    detectado_en    TIMESTAMP    NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_deteccion_beacon FOREIGN KEY (id_beacon)
+        REFERENCES beacon(id_beacon) ON UPDATE CASCADE,
+    CONSTRAINT fk_deteccion_staff  FOREIGN KEY (id_staff)
+        REFERENCES staff(id_staff) ON UPDATE CASCADE
+);
+
+CREATE INDEX idx_deteccion_beacon ON deteccion_beacon (id_beacon, detectado_en DESC);
+CREATE INDEX idx_deteccion_staff  ON deteccion_beacon (id_staff, detectado_en DESC);
+
+
+-- ============================================================
+-- AUDITORÍA
 -- ============================================================
 
 CREATE TABLE log_auditoria (
-    id_log  BIGSERIAL  primary key,
-    id_usuario int NOT NULL,
-    tabla_afectada varchar(80) NOT NULL,
-    operacion varchar(10) NOT NULL,
-    id_registro_afectado int,
-    ip_origen varchar(45) NOT NULL,
-    timestamp_operacion TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT ck_log_operacion CHECK (operacion IN ('INSERT','UPDATE','DELETE','SELECT')),
+    id_log              BIGSERIAL PRIMARY KEY,
+    id_usuario          INT          NOT NULL,
+    tabla_afectada      VARCHAR(80)  NOT NULL,
+    operacion           VARCHAR(10)  NOT NULL CHECK (operacion IN ('INSERT', 'UPDATE', 'DELETE')),
+    id_registro         INT,
+    ip_origen           VARCHAR(45),
+    timestamp_operacion TIMESTAMP    NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_log_usuario FOREIGN KEY (id_usuario)
-        REFERENCES profesional(id_profesional)
-        ON UPDATE CASCADE
+        REFERENCES usuario_sistema(id_usuario) ON UPDATE CASCADE
 );
 
-CREATE INDEX idx_log_usuario   ON log_auditoria (id_usuario);
-CREATE INDEX idx_log_timestamp ON log_auditoria (timestamp_operacion DESC);
+CREATE INDEX idx_log_usuario    ON log_auditoria (id_usuario);
+CREATE INDEX idx_log_timestamp  ON log_auditoria (timestamp_operacion DESC);

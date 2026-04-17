@@ -1,139 +1,145 @@
 {% extends 'base.html' %}
-
-{% block title %}Monitoreo IoT - Admin ElderCare{% endblock %}
-
-{% block extra_css %}
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-{% endblock %}
-
+{% block title %}Monitoreo IoT{% endblock %}
 {% block page_title %}Monitoreo IoT{% endblock %}
-{% block search_placeholder %}Buscar paciente en mapa...{% endblock %}
 
 {% block content %}
-<div class="iot-container">
-            
-            <!-- Resumen IoT Stats -->
-            <div class="stats-grid" style="margin-bottom: 24px;">
-                <div class="card summary-card">
-                    <div class="card-header">
-                        <span class="card-title">Pacientes Monitoreados</span>
-                        <i class="fa-solid fa-tower-broadcast card-icon"></i>
-                    </div>
-                    <div class="card-value">92</div>
-                    <div class="card-indicator text-green">
-                        <i class="fa-solid fa-signal"></i> GPS Activo
-                    </div>
-                </div>
-                <div class="card summary-card critical-alert">
-                    <div class="card-header">
-                        <span class="card-title">Fuera de Zona Segura</span>
-                        <i class="fa-solid fa-triangle-exclamation card-icon text-red"></i>
-                    </div>
-                    <div class="card-value text-red">2</div>
-                    <div class="card-indicator text-red">
-                        <i class="fa-solid fa-location-crosshairs"></i> Requieren atención
-                    </div>
-                </div>
-                <div class="card summary-card">
-                    <div class="card-header">
-                        <span class="card-title">Dispositivos Activos</span>
-                        <i class="fa-solid fa-microchip card-icon"></i>
-                    </div>
-                    <div class="card-value">88</div>
-                    <div class="card-indicator text-gray">
-                        <i class="fa-regular fa-clock"></i> 4 Sin señal
-                    </div>
-                </div>
-                <div class="card summary-card">
-                    <div class="card-header">
-                        <span class="card-title">Batería Promedio</span>
-                        <i class="fa-solid fa-battery-three-quarters card-icon" style="color: var(--success);"></i>
-                    </div>
-                    <div class="card-value">84%</div>
-                    <div class="card-indicator text-green">
-                        <i class="fa-solid fa-bolt"></i> Estable
-                    </div>
-                </div>
-            </div>
+<div class="page-header">
+  <div><h1>Monitoreo IoT</h1><p>GPS jardín · Beacons por ala · Estado en tiempo real</p></div>
+  <div class="flex gap-2">
+    {% if fuera_limite %}
+    <span class="badge badge-danger"><i class="fa-solid fa-triangle-exclamation"></i> {{ fuera_limite|length }} fuera de perímetro</span>
+    {% else %}
+    <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Todos dentro del perímetro</span>
+    {% endif %}
+  </div>
+</div>
 
-            <!-- Mapa y Lista Lateral -->
-            <div class="iot-main-grid">
-                
-                <!-- Mapa Interactivo -->
-                <div class="card map-section">
-                    <div class="section-header" style="margin-bottom: 15px;">
-                        <h3 class="section-title">Mapa en Vivo</h3>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="action-btn" onclick="simulateAlert()">
-                                <i class="fa-solid fa-bell"></i> Simular Alerta
-                            </button>
-                            <button class="action-btn" onclick="resetMap()">
-                                <i class="fa-solid fa-rotate-right"></i> Recargar
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Contenedor del Mapa Leaflet -->
-                    <div id="map" style="height: 500px; width: 100%; border-radius: 8px; z-index: 1;"></div>
-                </div>
+<!-- GPS Alert Banner -->
+{% if fuera_limite %}
+<div style="background:var(--danger-bg);border:1px solid #FECACA;border-radius:var(--radius-sm);padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:18px">
+  <i class="fa-solid fa-location-crosshairs" style="color:var(--danger);font-size:18px;flex-shrink:0"></i>
+  <div>
+    <strong style="color:var(--danger)">Alerta GPS — Residentes fuera del jardín</strong>
+    <div style="font-size:13px;color:#7F1D1D;margin-top:2px">
+      {% for r in fuera_limite %}{{ r.residente }}{% if not loop.last %}, {% endif %}{% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
 
-                <!-- Lista de Alertas Activas -->
-                <div class="card active-alerts-panel">
-                    <div class="section-header">
-                        <h3 class="section-title">Alertas de Ubicación</h3>
-                    </div>
+<div class="grid-2" style="margin-bottom:18px">
 
-                    <div class="alert-list-scroll">
-                        <!-- Alerta 1 -->
-                        <div class="iot-alert-item critical">
-                            <div class="alert-icon">
-                                <i class="fa-solid fa-location-dot"></i>
-                            </div>
-                            <div class="alert-info">
-                                <h4>Robert Miller</h4>
-                                <p>Salió de la "Zona Norte".</p>
-                                <span class="time-ago">Hace 2 min</span>
-                            </div>
-                            <button class="btn-action-sm btn-action-primary" onclick="showToast('Notificando a Robert...')">
-                                Notificar
-                            </button>
-                        </div>
+  <!-- GPS Status -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fa-solid fa-satellite-dish" style="color:var(--success);margin-right:8px"></i>GPS — Estado del Jardín</span>
+      {% if limite %}
+      <span class="badge badge-neutral" style="font-size:10px">
+        {{ limite.lat_min }}°, {{ limite.lon_min }}° → {{ limite.lat_max }}°, {{ limite.lon_max }}°
+      </span>
+      {% endif %}
+    </div>
+    <div class="card-body" style="padding-top:14px">
+      {% if gps_status %}
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Residente</th><th>Hab.</th><th>Coords</th><th>Estado</th><th>Hace</th></tr></thead>
+          <tbody>
+          {% for g in gps_status %}
+          <tr>
+            <td><strong>{{ g.residente }}</strong></td>
+            <td><span class="badge badge-neutral">{{ g.habitacion or '—' }}</span></td>
+            <td style="font-size:11px;color:var(--text-sm);font-family:monospace">{{ "%.4f"|format(g.latitud) }}, {{ "%.4f"|format(g.longitud) }}</td>
+            <td>
+              <span class="badge {% if g.dentro_limite %}badge-success{% else %}badge-danger{% endif %}">
+                <i class="fa-solid {% if g.dentro_limite %}fa-circle-check{% else %}fa-triangle-exclamation{% endif %}"></i>
+                {{ 'Dentro' if g.dentro_limite else 'FUERA' }}
+              </span>
+            </td>
+            <td style="font-size:12px;color:var(--text-sm)">{{ "%.0f"|format(g.minutos_desde_ping) }} min</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state"><i class="fa-solid fa-satellite"></i><p>Sin pings GPS registrados</p></div>
+      {% endif %}
+    </div>
+  </div>
 
-                        <!-- Alerta 2 -->
-                        <div class="iot-alert-item critical">
-                            <div class="alert-icon">
-                                <i class="fa-solid fa-location-dot"></i>
-                            </div>
-                            <div class="alert-info">
-                                <h4>Evelyn Rogers</h4>
-                                <p>Sin señal GPS por 15 min.</p>
-                                <span class="time-ago">Hace 15 min</span>
-                            </div>
-                            <button class="btn-action-sm btn-action-primary" onclick="showToast('Rastreo último conocido...')">
-                                Rastrear
-                            </button>
-                        </div>
+  <!-- Beacon Staff Locations -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fa-solid fa-broadcast-tower" style="color:var(--info);margin-right:8px"></i>Beacons — Ubicación del Personal</span>
+    </div>
+    <div class="card-body" style="padding-top:14px">
+      {% if staff_ubicacion %}
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Personal</th><th>Rol</th><th>Ala detectada</th><th>Última detección</th></tr></thead>
+          <tbody>
+          {% for s in staff_ubicacion %}
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#52B788,#2D8A5E);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:700;flex-shrink:0">{{ s.staff[0] }}</div>
+                <span style="font-weight:600;font-size:13px">{{ s.staff }}</span>
+              </div>
+            </td>
+            <td><span class="badge badge-neutral" style="font-size:10px">{{ s.rol }}</span></td>
+            <td>
+              {% if s.ala_detectada %}
+              <span class="badge badge-info"><i class="fa-solid fa-location-dot"></i> {{ s.ala_detectada }}</span>
+              {% else %}
+              <span style="color:var(--text-sm);font-size:12px">Sin señal</span>
+              {% endif %}
+            </td>
+            <td style="font-size:12px;color:var(--text-sm)">
+              {% if s.ultima_deteccion %}{{ s.ultima_deteccion }} ({{ "%.0f"|format(s.minutos_desde_deteccion) }} min){% else %}—{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state"><i class="fa-solid fa-wifi"></i><p>Sin detecciones de beacon hoy</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
 
-                        <!-- Paciente Seguro (Ejemplo) -->
-                        <div class="iot-alert-item safe">
-                            <div class="alert-icon">
-                                <i class="fa-solid fa-check"></i>
-                            </div>
-                            <div class="alert-info">
-                                <h4>Margaret T.</h4>
-                                <p>En "Zona Hogar".</p>
-                                <span class="time-ago">Hace 1 min</span>
-                            </div>
-                            <button class="btn-action-sm" onclick="showToast('Viendo ubicación...')">
-                                Ver
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-{% endblock %}
-
-{% block extra_scripts %}
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<!-- Info cards IoT -->
+<div class="grid-3">
+  <div class="card">
+    <div class="card-body" style="display:flex;align-items:center;gap:14px">
+      <div class="stat-icon green"><i class="fa-solid fa-satellite-dish"></i></div>
+      <div>
+        <div class="stat-label">GPS — Residentes monitoreados</div>
+        <div class="stat-value">{{ gps_status|length }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body" style="display:flex;align-items:center;gap:14px">
+      <div class="stat-icon blue"><i class="fa-solid fa-broadcast-tower"></i></div>
+      <div>
+        <div class="stat-label">Beacon — Staff detectado hoy</div>
+        <div class="stat-value">{{ staff_ubicacion|length }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body" style="display:flex;align-items:center;gap:14px">
+      <div class="stat-icon {% if fuera_limite %}red{% else %}green{% endif %}">
+        <i class="fa-solid {% if fuera_limite %}fa-triangle-exclamation{% else %}fa-shield-halved{% endif %}"></i>
+      </div>
+      <div>
+        <div class="stat-label">Fuera del perímetro</div>
+        <div class="stat-value">{{ fuera_limite|length }}</div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

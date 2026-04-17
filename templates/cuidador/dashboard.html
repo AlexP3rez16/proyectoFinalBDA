@@ -1,132 +1,117 @@
 {% extends 'base.html' %}
-
-{% block title %}Dashboard Cuidador - ElderCare{% endblock %}
-{% block page_title %}Dashboard Cuidador{% endblock %}
-{% block search_placeholder %}Buscar paciente...{% endblock %}
+{% block title %}Panel Cuidador{% endblock %}
+{% block page_title %}Panel del Cuidador{% endblock %}
 
 {% block content %}
-<div class="patients-container">
+<div class="page-header">
+  <div>
+    <h1>Bienvenido, {{ current_user.nombre }}</h1>
+    <p>{{ current_date_str }} · Turno activo</p>
+  </div>
+</div>
 
-    <!-- Stats -->
-    <div class="stats-grid">
-        <div class="card summary-card">
-            <div class="card-header">
-                <span class="card-title">Pacientes Registrados</span>
-                <i class="fa-solid fa-user-group card-icon"></i>
-            </div>
-            <div class="card-value">{{ total_pacientes }}</div>
-            <div class="card-indicator text-green">
-                <i class="fa-solid fa-check"></i> En el sistema
-            </div>
-        </div>
+<!-- Stats -->
+<div class="stats-grid" style="margin-bottom:22px">
+  <div class="stat-card">
+    <div class="stat-icon green"><i class="fa-solid fa-users"></i></div>
+    <div class="stat-label">Residentes a cargo</div>
+    <div class="stat-value">{{ total_residentes }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon {% if meds_pendientes %}red{% else %}green{% endif %}">
+      <i class="fa-solid fa-pills"></i>
+    </div>
+    <div class="stat-label">Medicamentos pendientes</div>
+    <div class="stat-value">{{ meds_pendientes|length }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon blue"><i class="fa-solid fa-face-smile"></i></div>
+    <div class="stat-label">Check-ins hoy</div>
+    <div class="stat-value">{{ checkins_hoy }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon {% if incidentes_hoy %}red{% else %}green{% endif %}">
+      <i class="fa-solid {% if incidentes_hoy %}fa-triangle-exclamation{% else %}fa-shield-halved{% endif %}"></i>
+    </div>
+    <div class="stat-label">Incidentes hoy</div>
+    <div class="stat-value">{{ incidentes_hoy }}</div>
+  </div>
+</div>
 
-        <div class="card summary-card critical-alert">
-            <div class="card-header">
-                <span class="card-title">Alertas Activas</span>
-                <i class="fa-solid fa-triangle-exclamation card-icon text-red"></i>
-            </div>
-            <div class="card-value text-red">{{ alertas_activas }}</div>
-            <div class="card-indicator text-red">
-                <i class="fa-solid fa-arrow-trend-up"></i> Requieren atención
-            </div>
-        </div>
+<div class="grid-2">
 
-        <div class="card summary-card">
-            <div class="card-header">
-                <span class="card-title">Cuidadores</span>
-                <i class="fa-regular fa-calendar-check card-icon"></i>
-            </div>
-            <div class="card-value">{{ total_cuidadores }}</div>
-            <div class="card-indicator text-gray">
-                <i class="fa-solid fa-users"></i> Registrados
-            </div>
+  <!-- Medicamentos pendientes -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fa-solid fa-pills" style="color:var(--danger);margin-right:8px"></i>Medicamentos Pendientes</span>
+      <a href="{{ url_for('cuidador_medicamentos') }}" class="btn btn-ghost btn-sm">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <div class="card-body" style="padding-top:14px">
+      {% if meds_pendientes %}
+      <div style="display:flex;flex-direction:column;gap:8px">
+        {% for m in meds_pendientes[:5] %}
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg);border-radius:10px;border-left:3px solid var(--danger)">
+          <i class="fa-solid fa-pills" style="color:var(--danger);font-size:14px;flex-shrink:0"></i>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:13px">{{ m.residente }}</div>
+            <div style="font-size:11px;color:var(--text-sm)">{{ m.medicamento }} · {{ m.dosis }}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:12px;font-weight:600;color:var(--danger)">{{ m.hora_programada }}</div>
+            <div style="font-size:10px;color:var(--text-sm)">Hab. {{ m.habitacion or '—' }}</div>
+          </div>
         </div>
+        {% endfor %}
+        {% if meds_pendientes|length > 5 %}
+        <div style="text-align:center;font-size:12px;color:var(--text-sm);padding:6px">+{{ meds_pendientes|length - 5 }} más</div>
+        {% endif %}
+      </div>
+      {% else %}
+      <div class="empty-state"><i class="fa-solid fa-circle-check" style="color:var(--success)"></i><p>Todos los medicamentos administrados</p></div>
+      {% endif %}
+    </div>
+  </div>
 
-        <div class="card summary-card">
-            <div class="card-header">
-                <span class="card-title">Pacientes Estables</span>
-                <i class="fa-solid fa-heart card-icon text-green"></i>
-            </div>
-            <div class="card-value text-green">
-                {{ pacientes | selectattr('nivel_severidad', 'none') | list | length + pacientes | selectattr('nivel_severidad', 'equalto', 'Normal') | list | length }}
-            </div>
-            <div class="card-indicator text-green">
-                <i class="fa-solid fa-arrow-trend-up"></i> Sin alertas graves
-            </div>
-        </div>
+  <!-- Acciones rápidas -->
+  <div style="display:flex;flex-direction:column;gap:14px">
+
+    <div class="card">
+      <div class="card-header"><span class="card-title" style="font-size:14px">Acciones Rápidas</span></div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:10px;padding-top:14px">
+        <a href="{{ url_for('cuidador_checkin') }}" class="btn btn-outline" style="justify-content:flex-start;gap:10px">
+          <i class="fa-solid fa-face-smile" style="color:var(--info)"></i> Registrar estado de ánimo
+        </a>
+        <a href="{{ url_for('cuidador_incidente') }}" class="btn btn-outline" style="justify-content:flex-start;gap:10px">
+          <i class="fa-solid fa-triangle-exclamation" style="color:var(--warning)"></i> Reportar incidente
+        </a>
+        <a href="{{ url_for('cuidador_nfc') }}" class="btn btn-outline" style="justify-content:flex-start;gap:10px">
+          <i class="fa-solid fa-mobile-screen" style="color:var(--success)"></i> Confirmar med. por NFC
+        </a>
+        <a href="{{ url_for('cuidador_residentes') }}" class="btn btn-outline" style="justify-content:flex-start;gap:10px">
+          <i class="fa-solid fa-users" style="color:var(--primary)"></i> Ver mis residentes
+        </a>
+      </div>
     </div>
 
-    <!-- Alertas + Observaciones recientes -->
-    <div class="alerts-main-grid" style="margin-top: 0;">
-
-        <!-- Tabla de pacientes con alertas -->
-        <div class="card section-alerts-list">
-            <div class="section-header">
-                <h3 class="section-title">Estado de Pacientes</h3>
-                <a href="{{ url_for('cuidador_pacientes') }}" class="table-header-link">Ver todos</a>
-            </div>
-            <div class="table-responsive">
-                <table class="custom-table">
-                    <thead>
-                        <tr>
-                            <th>Paciente</th>
-                            <th>Diagnóstico</th>
-                            <th>Riesgo</th>
-                            <th>Última Obs.</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for p in pacientes %}
-                        <tr>
-                            <td>
-                                <div class="patient-cell">
-                                    <img src="https://picsum.photos/seed/{{ p['id_paciente'] }}/30/30" class="avatar">
-                                    {{ p['paciente'] }}
-                                </div>
-                            </td>
-                            <td>{{ p['diagnostico_principal'] or '—' }}</td>
-                            <td>
-                                {% if p['nivel_severidad'] == 'Grave' %}
-                                    <span class="risk-badge risk-high">GRAVE</span>
-                                {% elif p['nivel_severidad'] == 'Moderado' %}
-                                    <span class="risk-badge risk-moderate">MODERADO</span>
-                                {% elif p['nivel_severidad'] %}
-                                    <span class="risk-badge risk-low">{{ p['nivel_severidad'] | upper }}</span>
-                                {% else %}
-                                    <span class="risk-badge risk-low">ESTABLE</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ p['fecha_obs'] or '—' }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+    <!-- Residentes con ánimo bajo -->
+    {% if animo_bajo %}
+    <div class="card" style="border-color:#FECACA">
+      <div class="card-header" style="padding-bottom:10px">
+        <span class="card-title" style="color:var(--danger);font-size:14px"><i class="fa-solid fa-circle-exclamation" style="margin-right:6px"></i>Ánimo Bajo — Atención</span>
+      </div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:8px;padding-top:10px">
+        {% for a in animo_bajo %}
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--danger-bg);border-radius:8px">
+          <span style="font-weight:600;font-size:13px">{{ a.residente }}</span>
+          <div style="display:flex;gap:2px">
+            {% for i in range(1,6) %}<div style="width:8px;height:8px;border-radius:50%;background:{% if i<=a.puntaje %}var(--danger){% else %}#E3DDD5{% endif %}"></div>{% endfor %}
+          </div>
         </div>
-
-        <!-- Última observación por paciente -->
-        <div class="card section-chart-trend">
-            <div class="section-header">
-                <h3 class="section-title">Últimas Observaciones</h3>
-            </div>
-            <div class="live-sessions-list" style="margin-top: 16px;">
-                {% for p in pacientes %}
-                {% if p['ultima_obs'] %}
-                <div class="live-item">
-                    <div class="live-avatar">
-                        <img src="https://picsum.photos/seed/{{ p['id_paciente'] }}/40/40" class="avatar">
-                    </div>
-                    <div class="live-info">
-                        <div class="live-doc">{{ p['paciente'] }}</div>
-                        <div class="live-patient" style="font-size:12px;">{{ p['ultima_obs'][:60] }}{% if p['ultima_obs']|length > 60 %}...{% endif %}</div>
-                    </div>
-                    <div class="live-time">{{ p['fecha_obs'] }}</div>
-                </div>
-                {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-
+        {% endfor %}
+      </div>
     </div>
+    {% endif %}
+
+  </div>
 </div>
 {% endblock %}
