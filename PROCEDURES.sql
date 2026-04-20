@@ -667,6 +667,26 @@ END;
 $$;
 
 
+-- Elimina un incidente por ID.
+CREATE OR REPLACE PROCEDURE sp_eliminar_incidente(
+    p_id_incidente  INT,
+    OUT ok          INT,
+    OUT msg         TEXT
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    DELETE FROM reporte_incidente WHERE id_incidente = p_id_incidente;
+    IF NOT FOUND THEN
+        ok := 0; msg := 'Incidente no encontrado.';
+    ELSE
+        ok := 1; msg := 'Incidente eliminado.';
+    END IF;
+EXCEPTION WHEN OTHERS THEN
+    ok := 0; msg := 'Error: ' || SQLERRM;
+END;
+$$;
+
+
 -- Actualiza tipo, descripción y severidad de un incidente existente.
 CREATE OR REPLACE PROCEDURE sp_actualizar_incidente(
     p_id_incidente  INT,

@@ -72,10 +72,18 @@
         <td style="font-size:12px;max-width:200px">{{ i.descripcion or '—' }}</td>
         <td style="font-size:12.5px">{{ i.reportado_por }}</td>
         <td>
-          <button class="btn btn-ghost btn-sm" title="Editar"
-            onclick="openEditInc({{ i.id_incidente }},'{{ i.tipo|e }}','{{ (i.descripcion or '')|e }}','{{ i.severidad|e }}')">
-            <i class="fa-solid fa-pen-to-square" style="color:var(--primary)"></i>
-          </button>
+          <div class="flex gap-2">
+            <button class="btn btn-ghost btn-sm" title="Editar"
+              onclick="openEditInc({{ i.id_incidente }},'{{ i.tipo|e }}','{{ (i.descripcion or '')|e }}','{{ i.severidad|e }}')">
+              <i class="fa-solid fa-pen-to-square" style="color:var(--primary)"></i>
+            </button>
+            <form method="POST" action="{{ url_for('terapeuta_incidente_eliminar', id_incidente=i.id_incidente) }}"
+                  onsubmit="return confirm('¿Eliminar este incidente?')">
+              <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--danger)" title="Eliminar">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </form>
+          </div>
         </td>
       </tr>
       {% else %}
