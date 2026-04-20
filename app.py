@@ -27,7 +27,7 @@ def get_db():
     return psycopg2.connect(**DB_CONFIG)
 
 def query(sql, params=None, fetchone=False, fetchall=False, commit=False):
-    """Simple inline SELECT helper. For writes, use call_proc or call_refcursor."""
+    """SELECT helper for view-only queries. For business writes use call_proc."""
     try:
         conn = get_db()
         cur  = conn.cursor(cursor_factory=RealDictCursor)
@@ -162,15 +162,13 @@ def inject_globals():
     first_name = full_name.split(' ')[0] if full_name else ''
     today      = date.today()
     return {
-        # current_date: date object so templates can call .strftime() freely
         'current_date':     today,
-        # current_date_str: pre-formatted string for base.html topbar
         'current_date_str': today.strftime('%d %b %Y'),
         'sidebar':          SIDEBAR.get(nivel, {}),
         'active':           request.endpoint or '',
         'current_user': {
-            'name':   full_name,     # "Ana García" — for avatar/greeting where full name needed
-            'nombre': first_name,    # "Ana" — for dashboard salutations
+            'name':   full_name,
+            'nombre': first_name,
             'role':   session.get('user_role', ''),
             'nivel':  nivel,
         },
@@ -193,21 +191,12 @@ def login():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
 
-        user = query('''
-            SELECT u.id_usuario, u.username, u.password_hash,
-                   s.id_staff, s.nombre, s.apellidos, s.especialidad,
-                   r.nivel_acceso, r.nombre_rol
-            FROM usuario_sistema u
-            JOIN staff s ON u.id_staff = s.id_staff
-            JOIN rol   r ON s.id_rol   = r.id_rol
-            WHERE u.username = %s
-              AND u.activo   = TRUE
-              AND s.activo   = TRUE
-        ''', (username,), fetchone=True)
+        rows = call_refcursor("CALL sp_auth_usuario(%s, 'resultado')", (username,))
+        user = rows[0] if rows else None
 
         if user and _check_password(user['password_hash'], password):
-            query('UPDATE usuario_sistema SET ultimo_login = NOW() WHERE id_usuario = %s',
-                  (user['id_usuario'],), commit=True)
+            call_proc("CALL sp_actualizar_ultimo_login(%s, NULL, NULL)",
+                      (user['id_usuario'],))
 
             session['user_id']      = user['id_usuario']
             session['staff_id']     = user['id_staff']
@@ -236,15 +225,8 @@ def logout():
 @app.route('/admin/dashboard')
 @rol_required(1)
 def admin_dashboard():
-    total_residentes = query(
-        "SELECT COUNT(*) AS c FROM residente WHERE activo = TRUE", fetchone=True)['c']
-    total_staff = query(
-        "SELECT COUNT(*) AS c FROM staff WHERE activo = TRUE", fetchone=True)['c']
-    incidentes_alta = query(
-        "SELECT COUNT(*) AS c FROM reporte_incidente WHERE severidad = 'Alta' "
-        "AND fecha >= NOW() - INTERVAL '7 days'", fetchone=True)['c']
-    medicamentos_pendientes = query(
-        "SELECT COUNT(*) AS c FROM v_medicamentos_pendientes_hoy", fetchone=True)['c']
+    stats_rows = call_refcursor("CALL sp_dashboard_admin('resultado')")
+    stats = stats_rows[0] if stats_rows else {}
 
     incidentes_recientes = query(
         "SELECT * FROM v_incidentes_recientes LIMIT 5", fetchall=True) or []
@@ -254,10 +236,10 @@ def admin_dashboard():
         "SELECT * FROM v_staff_en_turno_hoy", fetchall=True) or []
 
     return render_template('admin/dashboard.html',
-                           total_residentes=total_residentes,
-                           total_staff=total_staff,
-                           incidentes_alta=incidentes_alta,
-                           medicamentos_pendientes=medicamentos_pendientes,
+                           total_residentes=stats.get('total_residentes', 0),
+                           total_staff=stats.get('total_staff', 0),
+                           incidentes_alta=stats.get('incidentes_alta', 0),
+                           medicamentos_pendientes=stats.get('meds_pendientes', 0),
                            incidentes_recientes=incidentes_recientes,
                            sesiones_hoy=sesiones_hoy,
                            staff_turno=staff_turno)
@@ -273,11 +255,7 @@ def admin_residentes():
 @app.route('/admin/residentes/nuevo', methods=['GET', 'POST'])
 @rol_required(1)
 def admin_residente_nuevo():
-    cuidadores = query(
-        "SELECT s.id_staff, s.nombre || ' ' || s.apellidos AS nombre "
-        "FROM staff s JOIN rol r ON s.id_rol = r.id_rol "
-        "WHERE r.nivel_acceso = 3 AND s.activo = TRUE ORDER BY s.apellidos",
-        fetchall=True) or []
+    cuidadores = call_refcursor("CALL sp_lista_cuidadores('resultado')")
 
     if request.method == 'POST':
         f = request.form
@@ -298,43 +276,20 @@ def admin_residente_nuevo():
 @app.route('/admin/residentes/<int:id_residente>')
 @rol_required(1)
 def admin_residente_detalle(id_residente):
-    residente = query(
-        "SELECT r.*, EXTRACT(YEAR FROM AGE(r.fecha_nacimiento))::INT AS edad, "
-        "TO_CHAR(r.fecha_ingreso, 'DD Mon YYYY') AS fecha_ingreso "
-        "FROM residente r WHERE r.id_residente = %s",
-        (id_residente,), fetchone=True)
+    rows = call_refcursor("CALL sp_detalle_residente(%s, 'resultado')", (id_residente,))
+    residente = rows[0] if rows else None
     if not residente:
         flash('Residente no encontrado.', 'error')
         return redirect(url_for('admin_residentes'))
 
-    asignaciones = query(
-        "SELECT a.*, s.nombre || ' ' || s.apellidos AS staff_nombre, "
-        "ro.nombre_rol AS tipo_rol, a.es_principal "
-        "FROM asignacion a JOIN staff s ON a.id_staff = s.id_staff "
-        "JOIN rol ro ON s.id_rol = ro.id_rol "
-        "WHERE a.id_residente = %s AND a.fecha_fin IS NULL ORDER BY a.es_principal DESC",
-        (id_residente,), fetchall=True) or []
-
-    sesiones = query(
-        "SELECT st.*, s.nombre || ' ' || s.apellidos AS terapeuta, sa.nombre AS sala "
-        "FROM sesion_terapia st "
-        "JOIN staff s ON st.id_terapeuta = s.id_staff "
-        "JOIN sala sa ON st.id_sala = sa.id_sala "
-        "WHERE st.id_residente = %s ORDER BY st.fecha_sesion DESC LIMIT 10",
-        (id_residente,), fetchall=True) or []
-
-    checkins = query(
-        "SELECT c.*, s.nombre || ' ' || s.apellidos AS cuidador "
-        "FROM checkin_estado_animo c JOIN staff s ON c.id_cuidador = s.id_staff "
-        "WHERE c.id_residente = %s ORDER BY c.fecha_registro DESC LIMIT 10",
-        (id_residente,), fetchall=True) or []
-
-    incidentes = query(
-        "SELECT ri.*, s.nombre || ' ' || s.apellidos AS reportado_por, "
-        "TO_CHAR(ri.fecha, 'DD Mon YYYY HH12:MI AM') AS fecha "
-        "FROM reporte_incidente ri JOIN staff s ON ri.id_staff = s.id_staff "
-        "WHERE ri.id_residente = %s ORDER BY ri.fecha DESC LIMIT 5",
-        (id_residente,), fetchall=True) or []
+    asignaciones = call_refcursor(
+        "CALL sp_asignaciones_residente(%s, 'resultado')", (id_residente,))
+    sesiones     = call_refcursor(
+        "CALL sp_historial_sesiones_residente(%s, 'resultado')", (id_residente,))
+    checkins     = call_refcursor(
+        "CALL sp_historial_checkins_residente(%s, 'resultado')", (id_residente,))
+    incidentes   = call_refcursor(
+        "CALL sp_historial_incidentes_residente(%s, 'resultado')", (id_residente,))
 
     return render_template('admin/residente_detalle.html',
                            residente=residente,
@@ -370,13 +325,8 @@ def admin_residente_baja(id_residente):
 @app.route('/admin/staff')
 @rol_required(1)
 def admin_staff():
-    staff = query(
-        "SELECT s.*, r.nombre_rol, r.nivel_acceso, "
-        "TO_CHAR(s.fecha_alta, 'DD Mon YYYY') AS fecha_alta_fmt "
-        "FROM staff s JOIN rol r ON s.id_rol = r.id_rol "
-        "ORDER BY r.nivel_acceso, s.apellidos",
-        fetchall=True) or []
-    roles = query("SELECT * FROM rol ORDER BY nivel_acceso", fetchall=True) or []
+    staff = call_refcursor("CALL sp_lista_staff('resultado')")
+    roles = call_refcursor("CALL sp_lista_roles('resultado')")
     return render_template('admin/staff.html', staff=staff, roles=roles)
 
 @app.route('/admin/staff/nuevo', methods=['POST'])
@@ -420,7 +370,8 @@ def admin_staff_toggle(id_staff):
 def admin_iot():
     gps_status      = query("SELECT * FROM v_estado_gps_residentes",  fetchall=True) or []
     staff_ubicacion = query("SELECT * FROM v_ubicacion_actual_staff",  fetchall=True) or []
-    limite          = query("SELECT * FROM limite_jardin LIMIT 1",     fetchone=True)
+    limite_rows     = call_refcursor("CALL sp_limite_jardin('resultado')")
+    limite          = limite_rows[0] if limite_rows else None
     fuera_limite    = [r for r in gps_status if not r['dentro_limite']]
 
     return render_template('admin/iot.html',
@@ -437,18 +388,8 @@ def admin_rfid():
     accesos_hoy    = query("SELECT * FROM v_accesos_rfid_hoy", fetchall=True) or []
     no_autorizados = call_refcursor(
         "CALL sp_accesos_no_autorizados(%s, 'resultado')", (date.today(),))
-    lectores = query(
-        "SELECT lr.*, a.nombre AS ala, sa.nombre AS sala "
-        "FROM lector_rfid lr "
-        "LEFT JOIN ala  a  ON lr.id_ala  = a.id_ala "
-        "LEFT JOIN sala sa ON lr.id_sala = sa.id_sala "
-        "ORDER BY lr.id_lector",
-        fetchall=True) or []
-    staff_list = query(
-        "SELECT s.id_staff, s.nombre, s.apellidos, r.nombre_rol "
-        "FROM staff s JOIN rol r ON s.id_rol = r.id_rol "
-        "WHERE s.activo = TRUE ORDER BY s.apellidos",
-        fetchall=True) or []
+    lectores   = call_refcursor("CALL sp_lectores_rfid('resultado')")
+    staff_list = call_refcursor("CALL sp_lista_staff_activo('resultado')")
 
     return render_template('admin/rfid.html',
                            accesos_hoy=accesos_hoy,
@@ -483,11 +424,7 @@ def admin_reportes():
         "CALL sp_resumen_semanal_cuidador(%s, 'resultado')", (semana_inicio,))
     resumen = ([r for r in resumen_todos if str(r.get('id_staff', '')) == selected_cuidador]
                if selected_cuidador else resumen_todos)
-    cuidadores = query(
-        "SELECT s.id_staff, s.nombre || ' ' || s.apellidos AS nombre "
-        "FROM staff s JOIN rol r ON s.id_rol = r.id_rol "
-        "WHERE r.nivel_acceso = 3 AND s.activo = TRUE ORDER BY s.apellidos",
-        fetchall=True) or []
+    cuidadores = call_refcursor("CALL sp_lista_cuidadores('resultado')")
 
     # ── Tab 2: Evolución ánimo global (línea) ────────────────────────────────
     animo_rows      = call_refcursor("CALL sp_evolucion_animo_global(%s, 'resultado')", (dias,))
@@ -540,14 +477,7 @@ def admin_reportes():
 @app.route('/admin/auditoria')
 @rol_required(1)
 def admin_auditoria():
-    logs = query(
-        "SELECT l.*, u.username, s.nombre || ' ' || s.apellidos AS usuario_nombre, "
-        "TO_CHAR(l.timestamp_operacion, 'DD Mon YYYY HH12:MI AM') AS fecha_hora "
-        "FROM log_auditoria l "
-        "JOIN usuario_sistema u ON l.id_usuario = u.id_usuario "
-        "JOIN staff s ON u.id_staff = s.id_staff "
-        "ORDER BY l.timestamp_operacion DESC LIMIT 200",
-        fetchall=True) or []
+    logs = call_refcursor("CALL sp_log_auditoria('resultado')")
     return render_template('admin/auditoria.html', logs=logs)
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -559,96 +489,50 @@ def admin_auditoria():
 def terapeuta_dashboard():
     id_staff = session['staff_id']
 
-    total_residentes = query(
-        "SELECT COUNT(DISTINCT a.id_residente) AS c FROM asignacion a "
-        "JOIN residente r ON a.id_residente = r.id_residente "
-        "WHERE a.id_staff = %s AND a.fecha_fin IS NULL AND r.activo = TRUE",
-        (id_staff,), fetchone=True)['c']
+    stats_rows = call_refcursor(
+        "CALL sp_dashboard_terapeuta(%s, 'resultado')", (id_staff,))
+    stats = stats_rows[0] if stats_rows else {}
 
-    sesiones_hoy = query(
-        "SELECT st.*, r.nombre || ' ' || r.apellidos AS residente, sa.nombre AS sala, "
-        "TO_CHAR(st.fecha_sesion, 'HH12:MI AM') AS hora_inicio "
-        "FROM sesion_terapia st "
-        "JOIN residente r ON st.id_residente = r.id_residente "
-        "JOIN sala sa ON st.id_sala = sa.id_sala "
-        "WHERE st.id_terapeuta = %s AND st.fecha_sesion::DATE = CURRENT_DATE "
-        "ORDER BY st.fecha_sesion",
-        (id_staff,), fetchall=True) or []
-
-    incidentes_activos = query(
-        "SELECT COUNT(*) AS c FROM reporte_incidente "
-        "WHERE fecha >= NOW() - INTERVAL '7 days'",
-        fetchone=True)['c']
-
-    animo_promedio = query(
-        "SELECT AVG(c.puntaje)::NUMERIC(3,1) AS avg_p "
-        "FROM checkin_estado_animo c "
-        "JOIN asignacion a ON c.id_residente = a.id_residente "
-        "WHERE a.id_staff = %s AND a.fecha_fin IS NULL "
-        "AND c.fecha_registro >= NOW() - INTERVAL '7 days'",
-        (id_staff,), fetchone=True)
-
-    incidentes = query(
-        "SELECT * FROM v_incidentes_recientes LIMIT 5", fetchall=True) or []
+    sesiones_hoy = call_refcursor(
+        "CALL sp_sesiones_hoy_terapeuta(%s, 'resultado')", (id_staff,))
+    incidentes   = query("SELECT * FROM v_incidentes_recientes LIMIT 5", fetchall=True) or []
 
     return render_template('terapeuta/dashboard.html',
-                           total_residentes=total_residentes,
+                           total_residentes=stats.get('total_residentes', 0),
                            sesiones_hoy=sesiones_hoy,
-                           incidentes_activos=incidentes_activos,
-                           animo_promedio=animo_promedio['avg_p'] if animo_promedio else None,
+                           incidentes_activos=stats.get('incidentes_activos', 0),
+                           animo_promedio=stats.get('animo_promedio'),
                            incidentes=incidentes)
 
 @app.route('/terapeuta/residentes')
 @rol_required(2)
 def terapeuta_residentes():
-    id_staff = session['staff_id']
-    residentes = query(
-        "SELECT vr.*, "
-        "(SELECT COUNT(*) FROM sesion_terapia st "
-        " WHERE st.id_residente = vr.id_residente AND st.id_terapeuta = %s) AS total_sesiones "
-        "FROM v_residentes_resumen vr "
-        "WHERE EXISTS ("
-        "  SELECT 1 FROM asignacion a "
-        "  WHERE a.id_residente = vr.id_residente "
-        "    AND a.id_staff = %s AND a.fecha_fin IS NULL"
-        ")",
-        (id_staff, id_staff), fetchall=True) or []
+    id_staff   = session['staff_id']
+    residentes = call_refcursor(
+        "CALL sp_residentes_asignados_terapeuta(%s, 'resultado')", (id_staff,))
     return render_template('terapeuta/residentes.html', residentes=residentes)
 
 @app.route('/terapeuta/residentes/<int:id_residente>')
 @rol_required(2)
 def terapeuta_residente_detalle(id_residente):
-    residente = query(
-        "SELECT r.*, EXTRACT(YEAR FROM AGE(r.fecha_nacimiento))::INT AS edad, "
-        "TO_CHAR(r.fecha_ingreso, 'DD Mon YYYY') AS fecha_ingreso "
-        "FROM residente r WHERE r.id_residente = %s",
-        (id_residente,), fetchone=True)
+    rows = call_refcursor("CALL sp_detalle_residente(%s, 'resultado')", (id_residente,))
+    residente = rows[0] if rows else None
     if not residente:
         flash('Residente no encontrado.', 'error')
         return redirect(url_for('terapeuta_residentes'))
 
-    sesiones = query(
-        "SELECT st.*, sa.nombre AS sala "
-        "FROM sesion_terapia st JOIN sala sa ON st.id_sala = sa.id_sala "
-        "WHERE st.id_residente = %s AND st.id_terapeuta = %s "
-        "ORDER BY st.fecha_sesion DESC",
-        (id_residente, session['staff_id']), fetchall=True) or []
+    sesiones = call_refcursor(
+        "CALL sp_sesiones_residente_terapeuta(%s, %s, 'resultado')",
+        (id_residente, session['staff_id']))
 
-    # Escenario 1: mood evolution for Chart.js line chart
     evolucion_animo = call_refcursor(
         "CALL sp_evolucion_animo_residente(%s, %s, 'resultado')",
         (id_residente, 30))
 
-    incidentes = query(
-        "SELECT ri.*, s.nombre || ' ' || s.apellidos AS reportado_por, "
-        "TO_CHAR(ri.fecha, 'DD Mon YYYY') AS fecha "
-        "FROM reporte_incidente ri JOIN staff s ON ri.id_staff = s.id_staff "
-        "WHERE ri.id_residente = %s ORDER BY ri.fecha DESC",
-        (id_residente,), fetchall=True) or []
+    incidentes = call_refcursor(
+        "CALL sp_incidentes_residente_lista(%s, 'resultado')", (id_residente,))
 
-    salas = query("SELECT s.*, a.nombre AS ala FROM sala s "
-                  "LEFT JOIN ala a ON s.id_ala = a.id_ala ORDER BY s.nombre",
-                  fetchall=True) or []
+    salas = call_refcursor("CALL sp_salas('resultado')")
 
     return render_template('terapeuta/residente_detalle.html',
                            residente=residente,
@@ -661,15 +545,8 @@ def terapeuta_residente_detalle(id_residente):
 @app.route('/terapeuta/sesiones')
 @rol_required(2)
 def terapeuta_sesiones():
-    sesiones = query(
-        "SELECT st.*, r.nombre || ' ' || r.apellidos AS residente, sa.nombre AS sala, "
-        "TO_CHAR(st.fecha_sesion, 'DD Mon YYYY HH12:MI AM') AS fecha_sesion_fmt "
-        "FROM sesion_terapia st "
-        "JOIN residente r ON st.id_residente = r.id_residente "
-        "JOIN sala sa ON st.id_sala = sa.id_sala "
-        "WHERE st.id_terapeuta = %s ORDER BY st.fecha_sesion DESC",
-        (session['staff_id'],), fetchall=True) or []
-
+    sesiones = call_refcursor(
+        "CALL sp_sesiones_terapeuta(%s, 'resultado')", (session['staff_id'],))
     return render_template('terapeuta/sesiones.html', sesiones=sesiones)
 
 @app.route('/terapeuta/sesiones/nueva', methods=['GET', 'POST'])
@@ -677,20 +554,10 @@ def terapeuta_sesiones():
 def terapeuta_sesion_nueva():
     id_staff = session['staff_id']
 
-    residentes = query(
-        "SELECT r.id_residente, r.nombre, r.apellidos, r.habitacion "
-        "FROM residente r "
-        "JOIN asignacion a ON a.id_residente = r.id_residente "
-        "WHERE a.id_staff = %s AND a.fecha_fin IS NULL AND r.activo = TRUE "
-        "ORDER BY r.apellidos",
-        (id_staff,), fetchall=True) or []
+    residentes = call_refcursor(
+        "CALL sp_residentes_sesion_nueva(%s, 'resultado')", (id_staff,))
+    salas = call_refcursor("CALL sp_salas('resultado')")
 
-    salas = query(
-        "SELECT s.*, a.nombre AS ala FROM sala s "
-        "LEFT JOIN ala a ON s.id_ala = a.id_ala ORDER BY s.nombre",
-        fetchall=True) or []
-
-    # Support pre-selecting a resident from the detail page
     preselect_residente = request.args.get('id_residente', '')
 
     conflicto = None
@@ -735,15 +602,7 @@ def terapeuta_sesion_eliminar(id_sesion):
 @app.route('/terapeuta/incidentes')
 @rol_required(2)
 def terapeuta_incidentes():
-    incidentes = query(
-        "SELECT ri.*, r.nombre || ' ' || r.apellidos AS residente, "
-        "s.nombre || ' ' || s.apellidos AS reportado_por, "
-        "TO_CHAR(ri.fecha, 'DD Mon YYYY HH12:MI AM') AS fecha "
-        "FROM reporte_incidente ri "
-        "JOIN residente r ON ri.id_residente = r.id_residente "
-        "JOIN staff s ON ri.id_staff = s.id_staff "
-        "ORDER BY ri.fecha DESC",
-        fetchall=True) or []
+    incidentes = call_refcursor("CALL sp_todos_incidentes('resultado')")
     return render_template('terapeuta/incidentes.html', incidentes=incidentes)
 
 
@@ -763,12 +622,8 @@ def terapeuta_incidente_editar(id_incidente):
 
 def _mis_residentes_ids(id_staff):
     """Return list of id_residente assigned to this cuidador."""
-    rows = query(
-        "SELECT a.id_residente FROM asignacion a "
-        "JOIN residente r ON a.id_residente = r.id_residente "
-        "WHERE a.id_staff = %s AND a.tipo_rol = 'Cuidador' "
-        "AND a.fecha_fin IS NULL AND r.activo = TRUE",
-        (id_staff,), fetchall=True) or []
+    rows = call_refcursor(
+        "CALL sp_ids_residentes_cuidador(%s, 'resultado')", (id_staff,))
     return [r['id_residente'] for r in rows]
 
 @app.route('/cuidador/dashboard')
@@ -778,83 +633,42 @@ def cuidador_dashboard():
     ids = _mis_residentes_ids(id_staff)
     total_residentes = len(ids)
 
-    meds_pendientes = query(
-        "SELECT mpd.* FROM v_medicamentos_pendientes_hoy mpd "
-        "JOIN asignacion a ON mpd.id_residente = a.id_residente "
-        "WHERE a.id_staff = %s AND a.tipo_rol = 'Cuidador' AND a.fecha_fin IS NULL",
-        (id_staff,), fetchall=True) or []
+    meds_pendientes = call_refcursor(
+        "CALL sp_meds_pendientes_cuidador(%s, 'resultado')", (id_staff,))
 
-    checkins_hoy = query(
-        "SELECT COUNT(*) AS c FROM checkin_estado_animo "
-        "WHERE id_cuidador = %s AND fecha_registro::DATE = CURRENT_DATE",
-        (id_staff,), fetchone=True)['c']
+    stats_rows = call_refcursor(
+        "CALL sp_dashboard_cuidador(%s, 'resultado')", (id_staff,))
+    stats = stats_rows[0] if stats_rows else {}
 
-    incidentes_hoy = query(
-        "SELECT COUNT(*) AS c FROM reporte_incidente "
-        "WHERE id_staff = %s AND fecha::DATE = CURRENT_DATE",
-        (id_staff,), fetchone=True)['c']
-
-    # Residents with last mood score <= 2 (needs attention)
     animo_bajo = []
     if ids:
-        animo_bajo = query(
-            "SELECT DISTINCT ON (c.id_residente) "
-            "r.nombre || ' ' || r.apellidos AS residente, c.puntaje "
-            "FROM checkin_estado_animo c "
-            "JOIN residente r ON c.id_residente = r.id_residente "
-            "WHERE c.id_residente = ANY(%s) "
-            "ORDER BY c.id_residente, c.fecha_registro DESC",
-            (ids,), fetchall=True) or []
-        animo_bajo = [a for a in animo_bajo if a['puntaje'] <= 2]
+        rows = call_refcursor(
+            "CALL sp_animo_bajo_cuidador(%s, 'resultado')", (id_staff,))
+        animo_bajo = [a for a in rows if a['puntaje'] <= 2]
 
     return render_template('cuidador/dashboard.html',
                            total_residentes=total_residentes,
                            meds_pendientes=meds_pendientes,
-                           checkins_hoy=checkins_hoy,
-                           incidentes_hoy=incidentes_hoy,
+                           checkins_hoy=stats.get('checkins_hoy', 0),
+                           incidentes_hoy=stats.get('incidentes_hoy', 0),
                            animo_bajo=animo_bajo)
 
 @app.route('/cuidador/residentes')
 @rol_required(3)
 def cuidador_residentes():
-    id_staff = session['staff_id']
-    residentes = query(
-        "SELECT vr.* FROM v_residentes_resumen vr "
-        "WHERE EXISTS ("
-        "  SELECT 1 FROM asignacion a "
-        "  WHERE a.id_residente = vr.id_residente "
-        "    AND a.id_staff = %s "
-        "    AND a.tipo_rol = 'Cuidador' "
-        "    AND a.fecha_fin IS NULL"
-        ")",
-        (id_staff,), fetchall=True) or []
+    id_staff   = session['staff_id']
+    residentes = call_refcursor(
+        "CALL sp_residentes_cuidador_vista(%s, 'resultado')", (id_staff,))
     return render_template('cuidador/residentes.html', residentes=residentes)
 
 @app.route('/cuidador/medicamentos')
 @rol_required(3)
 def cuidador_medicamentos():
     id_staff = session['staff_id']
-    pendientes = query(
-        "SELECT mpd.* FROM v_medicamentos_pendientes_hoy mpd "
-        "JOIN asignacion a ON mpd.id_residente = a.id_residente "
-        "WHERE a.id_staff = %s AND a.tipo_rol = 'Cuidador' AND a.fecha_fin IS NULL",
-        (id_staff,), fetchall=True) or []
-
-    administrados = query(
-        "SELECT lm.*, m.nombre AS medicamento, m.dosis_default AS dosis, "
-        "r.nombre || ' ' || r.apellidos AS residente, r.habitacion, "
-        "s.nombre || ' ' || s.apellidos AS confirmado_por, "
-        "TO_CHAR(lm.fecha_administracion, 'HH12:MI AM') AS hora_administrado, "
-        "CASE WHEN ne.id_evento IS NOT NULL THEN 'NFC' ELSE 'Manual' END AS metodo "
-        "FROM log_medicamento lm "
-        "JOIN horario_medicamento hm ON lm.id_horario = hm.id_horario "
-        "JOIN medicamento m ON hm.id_medicamento = m.id_medicamento "
-        "JOIN residente r ON hm.id_residente = r.id_residente "
-        "JOIN staff s ON lm.id_cuidador = s.id_staff "
-        "LEFT JOIN nfc_evento ne ON ne.id_log_med = lm.id_log "
-        "WHERE lm.id_cuidador = %s AND lm.fecha_administracion::DATE = CURRENT_DATE "
-        "ORDER BY lm.fecha_administracion DESC",
-        (id_staff,), fetchall=True) or []
+    pendientes   = call_refcursor(
+        "CALL sp_meds_pendientes_cuidador(%s, 'resultado')", (id_staff,))
+    administrados = call_refcursor(
+        "CALL sp_medicamentos_admin_hoy(%s, 'resultado')", (id_staff,))
 
     return render_template('cuidador/medicamentos.html',
                            pendientes=pendientes,
@@ -877,14 +691,8 @@ def cuidador_checkin():
             flash(msg, 'error')
         return redirect(url_for('cuidador_residentes'))
 
-    # GET — render standalone form
-    residentes = query(
-        "SELECT r.id_residente, r.nombre, r.apellidos, r.habitacion "
-        "FROM residente r "
-        "JOIN asignacion a ON a.id_residente = r.id_residente "
-        "WHERE a.id_staff = %s AND a.tipo_rol = 'Cuidador' "
-        "AND a.fecha_fin IS NULL AND r.activo = TRUE ORDER BY r.apellidos",
-        (id_staff,), fetchall=True) or []
+    residentes = call_refcursor(
+        "CALL sp_residentes_cuidador_lista(%s, 'resultado')", (id_staff,))
     return render_template('cuidador/checkin.html', residentes=residentes)
 
 @app.route('/cuidador/incidente', methods=['GET', 'POST'])
@@ -901,14 +709,8 @@ def cuidador_incidente():
               'exito' if ok else 'error')
         return redirect(url_for('cuidador_residentes'))
 
-    # GET — render standalone form
-    residentes = query(
-        "SELECT r.id_residente, r.nombre, r.apellidos, r.habitacion "
-        "FROM residente r "
-        "JOIN asignacion a ON a.id_residente = r.id_residente "
-        "WHERE a.id_staff = %s AND a.tipo_rol = 'Cuidador' "
-        "AND a.fecha_fin IS NULL AND r.activo = TRUE ORDER BY r.apellidos",
-        (id_staff,), fetchall=True) or []
+    residentes = call_refcursor(
+        "CALL sp_residentes_cuidador_lista(%s, 'resultado')", (id_staff,))
     return render_template('cuidador/incidente.html', residentes=residentes)
 
 # ── NFC: Simulación de escaneo ────────────────────────────────────────────────
@@ -918,17 +720,7 @@ def cuidador_incidente():
 def cuidador_nfc():
     id_staff = session['staff_id']
 
-    # Tags with joined medication name for display
-    tags_nfc = query(
-        "SELECT DISTINCT ON (nt.id_tag) nt.id_tag, nt.codigo_tag, nt.descripcion, "
-        "r.nombre || ' ' || r.apellidos AS residente, r.habitacion, "
-        "COALESCE(m.nombre, nt.descripcion) AS medicamento "
-        "FROM nfc_tag nt "
-        "JOIN residente r ON nt.id_residente = r.id_residente "
-        "LEFT JOIN horario_medicamento hm ON hm.id_residente = nt.id_residente "
-        "LEFT JOIN medicamento m ON hm.id_medicamento = m.id_medicamento "
-        "ORDER BY nt.id_tag, r.habitacion",
-        fetchall=True) or []
+    tags_nfc = call_refcursor("CALL sp_tags_nfc('resultado')")
 
     resultado = None
     if request.method == 'POST':
@@ -939,16 +731,8 @@ def cuidador_nfc():
         resultado = {'ok': ok, 'msg': msg}
         flash(msg, 'exito' if ok else 'error')
 
-    log_nfc = query(
-        "SELECT TO_CHAR(ne.escaneado_en, 'HH12:MI AM') AS hora, "
-        "nt.descripcion AS medicamento, "
-        "r.nombre || ' ' || r.apellidos AS residente "
-        "FROM nfc_evento ne "
-        "JOIN nfc_tag nt ON ne.id_tag = nt.id_tag "
-        "JOIN residente r ON nt.id_residente = r.id_residente "
-        "WHERE ne.id_staff = %s AND ne.escaneado_en::DATE = CURRENT_DATE "
-        "ORDER BY ne.escaneado_en DESC LIMIT 10",
-        (id_staff,), fetchall=True) or []
+    log_nfc = call_refcursor(
+        "CALL sp_log_nfc_hoy(%s, 'resultado')", (id_staff,))
 
     return render_template('cuidador/nfc.html',
                            tags_nfc=tags_nfc,

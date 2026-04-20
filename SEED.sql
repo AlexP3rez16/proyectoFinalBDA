@@ -17,27 +17,27 @@ INSERT INTO rol (nombre_rol, nivel_acceso) VALUES
 
 INSERT INTO ala (nombre, piso, descripcion) VALUES
 ('Ala A — Demencia',    1, 'Residentes con demencia y deterioro cognitivo severo'),
-('Ala B — Ambulatorio', 1, 'Residentes con movilidad autónoma o asistida'),
-('Patio y Jardín',      0, 'Área exterior del asilo');
+('Ala B — Ambulatorio', 1, 'Residentes con movilidad autonoma o asistida'),
+('Patio y Jardin',      0, 'Area exterior del asilo');
 
 INSERT INTO sala (nombre, id_ala, capacidad) VALUES
 ('Sala de Terapia 1',  1, 3),
 ('Sala de Terapia 2',  2, 3),
 ('Sala Grupal',        2, 8),
-('Consultorio Médico', 2, 2);
+('Consultorio Medico', 2, 2);
 
 -- Límite del jardín — bounding box (coords simuladas)
 -- Dentro:  lat 20.6597–20.6603 | lon -103.3496–-103.3490
 -- Fuera:   lat > 20.6603 o < 20.6597
 INSERT INTO limite_jardin (descripcion, lat_min, lat_max, lon_min, lon_max)
-VALUES ('Perímetro jardín principal', 20.6597, 20.6603, -103.3496, -103.3490);
+VALUES ('Perimetro jardin principal', 20.6597, 20.6603, -103.3496, -103.3490);
 
 INSERT INTO medicamento (nombre, descripcion, unidad) VALUES
 ('Sertralina',  'Antidepresivo ISRS',              'mg'),
-('Lorazepam',   'Ansiolítico benzodiacepínico',     'mg'),
+('Lorazepam',   'Ansolitico benzodiacepinico',      'mg'),
 ('Memantina',   'Tratamiento demencia moderada',    'mg'),
-('Omeprazol',   'Protector gástrico',               'mg'),
-('Vitamina D3', 'Suplemento vitamínico',            'UI');
+('Omeprazol',   'Protector gastrico',                'mg'),
+('Vitamina D3', 'Suplemento vitaminico',            'UI');
 
 -- ============================================================
 -- 2. STAFF Y USUARIOS DEL SISTEMA
@@ -54,11 +54,11 @@ INSERT INTO medicamento (nombre, descripcion, unidad) VALUES
 
 INSERT INTO staff (nombre, apellidos, especialidad, email, id_rol) VALUES
 ('Carlos', 'Medina Ortiz',  'Administrador',     'admin@asilo.mx',    1),  -- id 1
-('Juan',   'Ramírez Soto',  'Psicólogo Clínico', 'jramirez@asilo.mx', 2),  -- id 2
-('Laura',  'Torres Vega',   'Geriatra',          'ltorres@asilo.mx',  2),  -- id 3
-('María',  'López Herrera', 'Cuidadora',         'mlopez@asilo.mx',   3),  -- id 4
-('Pedro',  'Sánchez Ruiz',  'Cuidador',          'psanchez@asilo.mx', 3),  -- id 5
-('Ana',    'García Díaz',   'Cuidadora',         'agarcia@asilo.mx',  3);  -- id 6
+('Juan',   'Ramirez Soto',  'Psicologo Clinico',  'jramirez@asilo.mx', 2),  -- id 2
+('Laura',  'Torres Vega',   'Geriatra',           'ltorres@asilo.mx',  2),  -- id 3
+('Maria',  'Lopez Herrera', 'Cuidadora',          'mlopez@asilo.mx',   3),  -- id 4
+('Pedro',  'Sanchez Ruiz',  'Cuidador',           'psanchez@asilo.mx', 3),  -- id 5
+('Ana',    'Garcia Diaz',   'Cuidadora',          'agarcia@asilo.mx',  3);  -- id 6
 
 INSERT INTO usuario_sistema (username, password_hash, id_staff) VALUES
 ('admin',    'admin123',     1),
@@ -77,17 +77,17 @@ INSERT INTO residente
      diagnostico_principal, nivel_movilidad, contacto_emergencia, tel_emergencia)
 VALUES
 -- id 1 — Escenario 2: múltiples cuidadores
-('Roberto', 'García Mendoza',  '1944-03-15', 'M', '101',
- 'Demencia leve',          'Asistido', 'Rosa García',   '3310001111'),
+('Roberto', 'Garcia Mendoza',   '1944-03-15', 'M', '101',
+ 'Demencia leve',          'Asistido', 'Rosa Garcia',   '3310001111'),
 -- id 2 — Escenario 1: deterioro emocional progresivo
 ('Carmen',  'Vega Salinas',    '1949-07-22', 'F', '102',
- 'Depresión mayor',        'Autonomo', 'Luis Vega',     '3310002222'),
--- id 3 — Escenarios 3 y 4: NFC medicamento + GPS jardín
+ 'Depresion mayor',        'Autonomo', 'Luis Vega',     '3310002222'),
+-- id 3 — Escenarios 3 y 4: NFC medicamento + GPS jardin
 ('Luis',    'Morales Fuentes', '1951-11-08', 'M', '103',
- 'Ansiedad generalizada',  'Autonomo', 'Sofía Morales', '3310003333'),
+ 'Ansiedad generalizada',  'Autonomo', 'Sofia Morales', '3310003333'),
 -- id 4 — general
 ('Elena',   'Ruiz Castillo',   '1946-05-30', 'F', '104',
- 'Deterioro cognitivo leve','Asistido','Marta Ruiz',    '3310004444');
+ 'Deterioro cognitivo leve','Asistido','Marta Ruiz',     '3310004444');
 
 -- ============================================================
 -- 4. ASIGNACIONES N:M (residente <-> staff)
@@ -134,13 +134,13 @@ INSERT INTO sesion_terapia
     (id_residente, id_terapeuta, id_sala, fecha_sesion, tipo_sesion, duracion_min, asistio, notas)
 VALUES
 (2, 2, 1, NOW() - INTERVAL '3 days', 'Individual', 50, TRUE,
- 'Paciente muestra signos de aislamiento social. Se ajustará plan terapéutico.'),
+ 'Paciente muestra signos de aislamiento social. Se ajustara plan terapeutico.'),
 (2, 2, 1, NOW() - INTERVAL '1 day',  'Individual', 50, TRUE,
- 'Empeoramiento notable del estado de ánimo. Posible ajuste de medicación.'),
+ 'Empeoramiento notable del estado de animo. Posible ajuste de medicacion.'),
 (1, 2, 3, NOW() - INTERVAL '2 days', 'Grupal',     60, TRUE,
- 'Participación activa en actividades grupales. Buena respuesta social.'),
+ 'Participacion activa en actividades grupales. Buena respuesta social.'),
 (3, 3, 2, NOW() - INTERVAL '1 day',  'Individual', 45, TRUE,
- 'Practica técnicas de respiración. Progreso controlado.'),
+ 'Practica tecnicas de respiracion. Progreso controlado.'),
 (4, 3, 2, CURRENT_DATE + INTERVAL '2 hours', 'Individual', 45, TRUE, NULL);
 
 -- ============================================================
@@ -152,8 +152,8 @@ VALUES
 
 INSERT INTO checkin_estado_animo (id_residente, id_cuidador, fecha_registro, puntaje, notas) VALUES
 (2, 4, NOW() - INTERVAL '3 days', 4, 'Tranquila pero con poco apetito.'),
-(2, 4, NOW() - INTERVAL '2 days', 3, 'Llanto espontáneo durante la tarde.'),
-(2, 4, NOW() - INTERVAL '1 day',  2, 'No quiso salir de la habitación. [AUTO-INCIDENTE Media]'),
+(2, 4, NOW() - INTERVAL '2 days', 3, 'Llanto espontaneo durante la tarde.'),
+(2, 4, NOW() - INTERVAL '1 day',  2, 'No quiso salir de la habitacion. [AUTO-INCIDENTE Media]'),
 (2, 4, NOW(),                     1, 'Crisis de angustia severa. [AUTO-INCIDENTE Alta]');
 
 -- ============================================================
@@ -164,14 +164,14 @@ INSERT INTO checkin_estado_animo (id_residente, id_cuidador, fecha_registro, pun
 
 INSERT INTO checkin_estado_animo (id_residente, id_cuidador, fecha_registro, puntaje, notas) VALUES
 (1, 4, NOW() - INTERVAL '8 hours', 3,
- 'Turno matutino — María: confusión moderada al despertar, orientado hacia el mediodía.'),
+ 'Turno matutino — Maria: confusion moderada al despertar, orientado hacia el mediodia.'),
 (1, 5, NOW() - INTERVAL '1 hour',  3,
- 'Turno nocturno — Pedro: tranquilo, tomó la cena completa, sin incidencias.');
+ 'Turno nocturno — Pedro: tranquilo, tomo la cena completa, sin incidencias.');
 
 -- Check-ins generales de otros residentes
 INSERT INTO checkin_estado_animo (id_residente, id_cuidador, fecha_registro, puntaje, notas) VALUES
-(3, 6, NOW() - INTERVAL '1 day', 4, 'Bien. Practicó respiración con Ana.'),
-(4, 6, NOW() - INTERVAL '1 day', 3, 'Algo desorientada por la tarde, requirió acompañamiento.');
+(3, 6, NOW() - INTERVAL '1 day', 4, 'Bien. Practico respiracion con Ana.'),
+(4, 6, NOW() - INTERVAL '1 day', 3, 'Algo desorientada por la tarde, requirio acompanamiento.');
 
 -- ============================================================
 -- 9. MEDICAMENTOS — HORARIOS Y LOGS
@@ -199,7 +199,7 @@ INSERT INTO log_medicamento (id_horario, id_cuidador, fecha_administracion) VALU
 -- ============================================================
 
 INSERT INTO nfc_tag (codigo_tag, id_residente, descripcion) VALUES
-('NFC-LM-103', 3, 'Estación de medicamentos — Hab. 103 (Luis Morales)');
+('NFC-LM-103', 3, 'Estacion de medicamentos — Hab. 103 (Luis Morales)');
 
 -- Simulación del resultado de CALL sp_log_medicamento_nfc('NFC-LM-103', 6, NULL, NULL)
 -- log_medicamento se inserta primero para obtener id_log, luego nfc_evento lo referencia.
@@ -240,9 +240,9 @@ INSERT INTO gps_ping (id_residente, latitud, longitud, registrado_en) VALUES
 -- ============================================================
 
 INSERT INTO lector_rfid (ubicacion, es_restringido, id_ala, id_sala) VALUES
-('Entrada Principal',     FALSE, 2, NULL),  -- id 1 — Ala B, público
-('Sala de Medicamentos',  TRUE,  1, NULL),  -- id 2 — Ala A, restringido ← acceso indebido
-('Enfermería',            TRUE,  2, 4   ),  -- id 3 — Ala B, Consultorio Médico
+('Entrada Principal',     FALSE, 2, NULL),  -- id 1 — Ala B, publico
+('Sala de Medicamentos',  TRUE,  1, NULL),  -- id 2 — Ala A, restringido
+('Enfermeria',            TRUE,  2, 4   ),  -- id 3 — Ala B, Consultorio Medico
 ('Cuarto de Suministros', TRUE,  1, NULL);  -- id 4 — Ala A, restringido
 
 -- Accesos legítimos del día
@@ -280,11 +280,11 @@ INSERT INTO deteccion_beacon (id_beacon, id_staff, detectado_en) VALUES
 
 INSERT INTO reporte_incidente (id_residente, id_staff, fecha, tipo, descripcion, severidad) VALUES
 (1, 4, NOW() - INTERVAL '5 days', 'Caida',
- 'Residente resbaló al salir de la ducha. Sin lesiones graves, se notificó a familiar.', 'Media'),
+ 'Residente resbalo al salir de la ducha. Sin lesiones graves, se notifico a familiar.', 'Media'),
 (4, 6, NOW() - INTERVAL '3 days', 'Rechazo_Medicamento',
- 'Elena rechazó tomar la Memantina durante el desayuno. Se intentó administrar con jugo.', 'Baja'),
+ 'Elena rechazo tomar la Memantina durante el desayuno. Se intento administrar con jugo.', 'Baja'),
 (2, 4, NOW() - INTERVAL '6 days', 'Agitacion',
- 'Episodio de llanto prolongado durante visita familiar. Se ofreció acompañamiento.', 'Baja');
+ 'Episodio de llanto prolongado durante visita familiar. Se ofrecio acompanamiento.', 'Baja');
 
 COMMIT;
 

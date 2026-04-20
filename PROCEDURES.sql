@@ -863,3 +863,608 @@ BEGIN
     ORDER BY (COUNT(DISTINCT st.id_sesion) + COUNT(DISTINCT c.id_checkin)) DESC;
 END;
 $$;
+
+
+-- ============================================================
+-- CONSULTAS DE DATOS (REFCURSOR)
+-- Procedimientos que reemplazan queries inline en Flask.
+-- Todos retornan filas via INOUT resultado REFCURSOR.
+-- ============================================================
+
+-- Autenticacion: retorna datos del usuario activo por username.
+CREATE OR REPLACE PROCEDURE sp_auth_usuario(
+    p_username  TEXT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT u.id_usuario, u.username, u.password_hash,
+               s.id_staff, s.nombre, s.apellidos, s.especialidad,
+               r.nivel_acceso, r.nombre_rol
+        FROM usuario_sistema u
+        JOIN staff s ON u.id_staff = s.id_staff
+        JOIN rol   r ON s.id_rol   = r.id_rol
+        WHERE u.username = p_username
+          AND u.activo   = TRUE
+          AND s.activo   = TRUE;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE sp_actualizar_ultimo_login(
+    p_id_usuario INT,
+    OUT ok       INT,
+    OUT msg      TEXT
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    UPDATE usuario_sistema SET ultimo_login = NOW() WHERE id_usuario = p_id_usuario;
+    ok := 1; msg := 'Login registrado.';
+EXCEPTION WHEN OTHERS THEN
+    ok := 0; msg := SQLERRM;
+END;
+$$;
+
+
+-- Dashboard admin: una fila con los 4 contadores del panel.
+CREATE OR REPLACE PROCEDURE sp_dashboard_admin(
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT
+            (SELECT COUNT(*) FROM residente WHERE activo = TRUE)::INT              AS total_residentes,
+            (SELECT COUNT(*) FROM staff    WHERE activo = TRUE)::INT              AS total_staff,
+            (SELECT COUNT(*) FROM reporte_incidente
+             WHERE severidad = 'Alta' AND fecha >= NOW() - INTERVAL '7 days')::INT AS incidentes_alta,
+            (SELECT COUNT(*) FROM v_medicamentos_pendientes_hoy)::INT             AS meds_pendientes;
+END;
+$$;
+
+
+-- Lista de cuidadores activos (para dropdowns de asignacion).
+CREATE OR REPLACE PROCEDURE sp_lista_cuidadores(
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT s.id_staff, s.nombre || ' ' || s.apellidos AS nombre
+        FROM staff s JOIN rol r ON s.id_rol = r.id_rol
+        WHERE r.nivel_acceso = 3 AND s.activo = TRUE
+        ORDER BY s.apellidos;
+END;
+$$;
+
+
+-- Detalle de un residente (incluye edad calculada y fecha formateada).
+CREATE OR REPLACE PROCEDURE sp_detalle_residente(
+    p_id_residente INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT r.*,
+               EXTRACT(YEAR FROM AGE(r.fecha_nacimiento))::INT AS edad,
+               TO_CHAR(r.fecha_ingreso, 'DD Mon YYYY') AS fecha_ingreso
+        FROM residente r
+        WHERE r.id_residente = p_id_residente;
+END;
+$$;
+
+
+-- Asignaciones activas de un residente.
+CREATE OR REPLACE PROCEDURE sp_asignaciones_residente(
+    p_id_residente INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT a.*, s.nombre || ' ' || s.apellidos AS staff_nombre,
+               ro.nombre_rol AS tipo_rol, a.es_principal
+        FROM asignacion a
+        JOIN staff s  ON a.id_staff = s.id_staff
+        JOIN rol   ro ON s.id_rol   = ro.id_rol
+        WHERE a.id_residente = p_id_residente AND a.fecha_fin IS NULL
+        ORDER BY a.es_principal DESC;
+END;
+$$;
+
+
+-- Ultimas 10 sesiones de terapia de un residente (vista admin).
+CREATE OR REPLACE PROCEDURE sp_historial_sesiones_residente(
+    p_id_residente INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT st.*, s.nombre || ' ' || s.apellidos AS terapeuta, sa.nombre AS sala
+        FROM sesion_terapia st
+        JOIN staff s  ON st.id_terapeuta = s.id_staff
+        JOIN sala  sa ON st.id_sala      = sa.id_sala
+        WHERE st.id_residente = p_id_residente
+        ORDER BY st.fecha_sesion DESC
+        LIMIT 10;
+END;
+$$;
+
+
+-- Ultimos 10 check-ins de animo de un residente.
+CREATE OR REPLACE PROCEDURE sp_historial_checkins_residente(
+    p_id_residente INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT c.*, s.nombre || ' ' || s.apellidos AS cuidador
+        FROM checkin_estado_animo c
+        JOIN staff s ON c.id_cuidador = s.id_staff
+        WHERE c.id_residente = p_id_residente
+        ORDER BY c.fecha_registro DESC
+        LIMIT 10;
+END;
+$$;
+
+
+-- Ultimos 5 incidentes de un residente (vista admin).
+CREATE OR REPLACE PROCEDURE sp_historial_incidentes_residente(
+    p_id_residente INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT ri.*, s.nombre || ' ' || s.apellidos AS reportado_por,
+               TO_CHAR(ri.fecha, 'DD Mon YYYY HH12:MI AM') AS fecha
+        FROM reporte_incidente ri
+        JOIN staff s ON ri.id_staff = s.id_staff
+        WHERE ri.id_residente = p_id_residente
+        ORDER BY ri.fecha DESC
+        LIMIT 5;
+END;
+$$;
+
+
+-- Lista completa de staff con rol y fecha de alta.
+CREATE OR REPLACE PROCEDURE sp_lista_staff(
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT s.*, r.nombre_rol, r.nivel_acceso,
+               TO_CHAR(s.fecha_alta, 'DD Mon YYYY') AS fecha_alta_fmt
+        FROM staff s JOIN rol r ON s.id_rol = r.id_rol
+        ORDER BY r.nivel_acceso, s.apellidos;
+END;
+$$;
+
+
+-- Todos los roles ordenados por nivel de acceso.
+CREATE OR REPLACE PROCEDURE sp_lista_roles(
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT * FROM rol ORDER BY nivel_acceso;
+END;
+$$;
+
+
+-- Lectores RFID con datos de ala y sala.
+CREATE OR REPLACE PROCEDURE sp_lectores_rfid(
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT lr.*, a.nombre AS ala, sa.nombre AS sala
+        FROM lector_rfid lr
+        LEFT JOIN ala  a  ON lr.id_ala  = a.id_ala
+        LEFT JOIN sala sa ON lr.id_sala = sa.id_sala
+        ORDER BY lr.id_lector;
+END;
+$$;
+
+
+-- Staff activo con rol (para dropdowns de RFID y asignaciones).
+CREATE OR REPLACE PROCEDURE sp_lista_staff_activo(
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT s.id_staff, s.nombre, s.apellidos, r.nombre_rol
+        FROM staff s JOIN rol r ON s.id_rol = r.id_rol
+        WHERE s.activo = TRUE
+        ORDER BY s.apellidos;
+END;
+$$;
+
+
+-- Limite geografico del jardin (primera fila).
+CREATE OR REPLACE PROCEDURE sp_limite_jardin(
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT * FROM limite_jardin LIMIT 1;
+END;
+$$;
+
+
+-- Log de auditoria con datos de usuario (ultimos 200 registros).
+CREATE OR REPLACE PROCEDURE sp_log_auditoria(
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT l.*, u.username, s.nombre || ' ' || s.apellidos AS usuario_nombre,
+               TO_CHAR(l.timestamp_operacion, 'DD Mon YYYY HH12:MI AM') AS fecha_hora
+        FROM log_auditoria l
+        JOIN usuario_sistema u ON l.id_usuario = u.id_usuario
+        JOIN staff s ON u.id_staff = s.id_staff
+        ORDER BY l.timestamp_operacion DESC
+        LIMIT 200;
+END;
+$$;
+
+
+-- Dashboard terapeuta: una fila con estadisticas clave.
+CREATE OR REPLACE PROCEDURE sp_dashboard_terapeuta(
+    p_id_staff  INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT
+            (SELECT COUNT(DISTINCT a.id_residente)
+             FROM asignacion a
+             JOIN residente r ON a.id_residente = r.id_residente
+             WHERE a.id_staff = p_id_staff AND a.fecha_fin IS NULL AND r.activo = TRUE
+            )::INT AS total_residentes,
+            (SELECT COUNT(*) FROM reporte_incidente
+             WHERE fecha >= NOW() - INTERVAL '7 days')::INT AS incidentes_activos,
+            (SELECT AVG(c.puntaje)::NUMERIC(3,1)
+             FROM checkin_estado_animo c
+             JOIN asignacion a ON c.id_residente = a.id_residente
+             WHERE a.id_staff = p_id_staff AND a.fecha_fin IS NULL
+               AND c.fecha_registro >= NOW() - INTERVAL '7 days'
+            ) AS animo_promedio;
+END;
+$$;
+
+
+-- Sesiones de hoy para un terapeuta especifico.
+CREATE OR REPLACE PROCEDURE sp_sesiones_hoy_terapeuta(
+    p_id_staff  INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT st.*, r.nombre || ' ' || r.apellidos AS residente, sa.nombre AS sala,
+               TO_CHAR(st.fecha_sesion, 'HH12:MI AM') AS hora_inicio
+        FROM sesion_terapia st
+        JOIN residente r ON st.id_residente = r.id_residente
+        JOIN sala sa     ON st.id_sala      = sa.id_sala
+        WHERE st.id_terapeuta = p_id_staff
+          AND st.fecha_sesion::DATE = CURRENT_DATE
+        ORDER BY st.fecha_sesion;
+END;
+$$;
+
+
+-- Residentes asignados a un terapeuta (con conteo de sesiones).
+CREATE OR REPLACE PROCEDURE sp_residentes_asignados_terapeuta(
+    p_id_staff  INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT vr.*,
+               (SELECT COUNT(*) FROM sesion_terapia st
+                WHERE st.id_residente = vr.id_residente
+                  AND st.id_terapeuta = p_id_staff)::INT AS total_sesiones
+        FROM v_residentes_resumen vr
+        WHERE EXISTS (
+            SELECT 1 FROM asignacion a
+            WHERE a.id_residente = vr.id_residente
+              AND a.id_staff = p_id_staff AND a.fecha_fin IS NULL
+        );
+END;
+$$;
+
+
+-- Todas las sesiones de un terapeuta ordenadas por fecha.
+CREATE OR REPLACE PROCEDURE sp_sesiones_terapeuta(
+    p_id_staff  INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT st.*, r.nombre || ' ' || r.apellidos AS residente, sa.nombre AS sala,
+               TO_CHAR(st.fecha_sesion, 'DD Mon YYYY HH12:MI AM') AS fecha_sesion_fmt
+        FROM sesion_terapia st
+        JOIN residente r ON st.id_residente = r.id_residente
+        JOIN sala sa     ON st.id_sala      = sa.id_sala
+        WHERE st.id_terapeuta = p_id_staff
+        ORDER BY st.fecha_sesion DESC;
+END;
+$$;
+
+
+-- Residentes asignados a un terapeuta (para formulario de nueva sesion).
+CREATE OR REPLACE PROCEDURE sp_residentes_sesion_nueva(
+    p_id_staff  INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT r.id_residente, r.nombre, r.apellidos, r.habitacion
+        FROM residente r
+        JOIN asignacion a ON a.id_residente = r.id_residente
+        WHERE a.id_staff = p_id_staff AND a.fecha_fin IS NULL AND r.activo = TRUE
+        ORDER BY r.apellidos;
+END;
+$$;
+
+
+-- Todas las salas con nombre de ala.
+CREATE OR REPLACE PROCEDURE sp_salas(
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT s.*, a.nombre AS ala
+        FROM sala s
+        LEFT JOIN ala a ON s.id_ala = a.id_ala
+        ORDER BY s.nombre;
+END;
+$$;
+
+
+-- Sesiones de un residente filtradas por terapeuta (vista detalle terapeuta).
+CREATE OR REPLACE PROCEDURE sp_sesiones_residente_terapeuta(
+    p_id_residente  INT,
+    p_id_staff      INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT st.*, sa.nombre AS sala
+        FROM sesion_terapia st
+        JOIN sala sa ON st.id_sala = sa.id_sala
+        WHERE st.id_residente = p_id_residente AND st.id_terapeuta = p_id_staff
+        ORDER BY st.fecha_sesion DESC;
+END;
+$$;
+
+
+-- Todos los incidentes de un residente (vista detalle terapeuta).
+CREATE OR REPLACE PROCEDURE sp_incidentes_residente_lista(
+    p_id_residente  INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT ri.*, s.nombre || ' ' || s.apellidos AS reportado_por,
+               TO_CHAR(ri.fecha, 'DD Mon YYYY') AS fecha
+        FROM reporte_incidente ri
+        JOIN staff s ON ri.id_staff = s.id_staff
+        WHERE ri.id_residente = p_id_residente
+        ORDER BY ri.fecha DESC;
+END;
+$$;
+
+
+-- Todos los incidentes con residente y staff (vista lista terapeuta).
+CREATE OR REPLACE PROCEDURE sp_todos_incidentes(
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT ri.*, r.nombre || ' ' || r.apellidos AS residente,
+               s.nombre || ' ' || s.apellidos AS reportado_por,
+               TO_CHAR(ri.fecha, 'DD Mon YYYY HH12:MI AM') AS fecha
+        FROM reporte_incidente ri
+        JOIN residente r ON ri.id_residente = r.id_residente
+        JOIN staff s     ON ri.id_staff     = s.id_staff
+        ORDER BY ri.fecha DESC;
+END;
+$$;
+
+
+-- IDs de residentes asignados a un cuidador.
+CREATE OR REPLACE PROCEDURE sp_ids_residentes_cuidador(
+    p_id_staff  INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT a.id_residente
+        FROM asignacion a
+        JOIN residente r ON a.id_residente = r.id_residente
+        WHERE a.id_staff = p_id_staff AND a.tipo_rol = 'Cuidador'
+          AND a.fecha_fin IS NULL AND r.activo = TRUE;
+END;
+$$;
+
+
+-- Medicamentos pendientes del dia para los residentes de un cuidador.
+CREATE OR REPLACE PROCEDURE sp_meds_pendientes_cuidador(
+    p_id_staff  INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT mpd.*
+        FROM v_medicamentos_pendientes_hoy mpd
+        JOIN asignacion a ON mpd.id_residente = a.id_residente
+        WHERE a.id_staff = p_id_staff AND a.tipo_rol = 'Cuidador' AND a.fecha_fin IS NULL;
+END;
+$$;
+
+
+-- Dashboard cuidador: una fila con checkins e incidentes de hoy.
+CREATE OR REPLACE PROCEDURE sp_dashboard_cuidador(
+    p_id_staff  INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT
+            (SELECT COUNT(*) FROM checkin_estado_animo
+             WHERE id_cuidador = p_id_staff
+               AND fecha_registro::DATE = CURRENT_DATE)::INT AS checkins_hoy,
+            (SELECT COUNT(*) FROM reporte_incidente
+             WHERE id_staff = p_id_staff
+               AND fecha::DATE = CURRENT_DATE)::INT AS incidentes_hoy;
+END;
+$$;
+
+
+-- Residentes con ultimo puntaje de animo bajo (para alertas en dashboard).
+CREATE OR REPLACE PROCEDURE sp_animo_bajo_cuidador(
+    p_id_staff  INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT DISTINCT ON (c.id_residente)
+               r.nombre || ' ' || r.apellidos AS residente, c.puntaje
+        FROM checkin_estado_animo c
+        JOIN residente r  ON c.id_residente  = r.id_residente
+        JOIN asignacion a ON c.id_residente  = a.id_residente
+        WHERE a.id_staff = p_id_staff AND a.tipo_rol = 'Cuidador'
+          AND a.fecha_fin IS NULL
+        ORDER BY c.id_residente, c.fecha_registro DESC;
+END;
+$$;
+
+
+-- Residentes de un cuidador desde la vista resumen (pagina lista).
+CREATE OR REPLACE PROCEDURE sp_residentes_cuidador_vista(
+    p_id_staff  INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT vr.*
+        FROM v_residentes_resumen vr
+        WHERE EXISTS (
+            SELECT 1 FROM asignacion a
+            WHERE a.id_residente = vr.id_residente
+              AND a.id_staff   = p_id_staff
+              AND a.tipo_rol   = 'Cuidador'
+              AND a.fecha_fin IS NULL
+        );
+END;
+$$;
+
+
+-- Residentes de un cuidador (id, nombre, habitacion — para formularios).
+CREATE OR REPLACE PROCEDURE sp_residentes_cuidador_lista(
+    p_id_staff  INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT r.id_residente, r.nombre, r.apellidos, r.habitacion
+        FROM residente r
+        JOIN asignacion a ON a.id_residente = r.id_residente
+        WHERE a.id_staff = p_id_staff AND a.tipo_rol = 'Cuidador'
+          AND a.fecha_fin IS NULL AND r.activo = TRUE
+        ORDER BY r.apellidos;
+END;
+$$;
+
+
+-- Medicamentos administrados hoy por un cuidador.
+CREATE OR REPLACE PROCEDURE sp_medicamentos_admin_hoy(
+    p_id_staff  INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT lm.*, m.nombre AS medicamento, m.dosis_default AS dosis,
+               r.nombre || ' ' || r.apellidos AS residente, r.habitacion,
+               s.nombre || ' ' || s.apellidos AS confirmado_por,
+               TO_CHAR(lm.fecha_administracion, 'HH12:MI AM') AS hora_administrado,
+               CASE WHEN ne.id_evento IS NOT NULL THEN 'NFC' ELSE 'Manual' END AS metodo
+        FROM log_medicamento lm
+        JOIN horario_medicamento hm ON lm.id_horario     = hm.id_horario
+        JOIN medicamento m          ON hm.id_medicamento = m.id_medicamento
+        JOIN residente r            ON hm.id_residente   = r.id_residente
+        JOIN staff s                ON lm.id_cuidador    = s.id_staff
+        LEFT JOIN nfc_evento ne     ON ne.id_log_med     = lm.id_log
+        WHERE lm.id_cuidador = p_id_staff
+          AND lm.fecha_administracion::DATE = CURRENT_DATE
+        ORDER BY lm.fecha_administracion DESC;
+END;
+$$;
+
+
+-- Tags NFC con residente y medicamento asociado.
+CREATE OR REPLACE PROCEDURE sp_tags_nfc(
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT DISTINCT ON (nt.id_tag)
+               nt.id_tag, nt.codigo_tag, nt.descripcion,
+               r.nombre || ' ' || r.apellidos AS residente, r.habitacion,
+               COALESCE(m.nombre, nt.descripcion) AS medicamento
+        FROM nfc_tag nt
+        JOIN residente r ON nt.id_residente = r.id_residente
+        LEFT JOIN horario_medicamento hm ON hm.id_residente   = nt.id_residente
+        LEFT JOIN medicamento m          ON hm.id_medicamento = m.id_medicamento
+        ORDER BY nt.id_tag, r.habitacion;
+END;
+$$;
+
+
+-- Log NFC de hoy para un cuidador (ultimos 10 escaneos).
+CREATE OR REPLACE PROCEDURE sp_log_nfc_hoy(
+    p_id_staff  INT,
+    INOUT resultado REFCURSOR
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    OPEN resultado FOR
+        SELECT TO_CHAR(ne.escaneado_en, 'HH12:MI AM') AS hora,
+               nt.descripcion AS medicamento,
+               r.nombre || ' ' || r.apellidos AS residente
+        FROM nfc_evento ne
+        JOIN nfc_tag nt  ON ne.id_tag       = nt.id_tag
+        JOIN residente r ON nt.id_residente = r.id_residente
+        WHERE ne.id_staff = p_id_staff
+          AND ne.escaneado_en::DATE = CURRENT_DATE
+        ORDER BY ne.escaneado_en DESC
+        LIMIT 10;
+END;
+$$;
