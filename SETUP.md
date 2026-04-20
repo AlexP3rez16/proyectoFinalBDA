@@ -78,7 +78,23 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
 
 ## 4. Ejecutar los Scripts SQL
 
-Abre una terminal (normal, no necesita ser administrador) en la carpeta `proyectoFinalBDA` y corre los 4 scripts **en este orden exacto**:
+### Opción A — Desde SQL Shell (recomendado en Windows)
+
+Abre SQL Shell, conéctate con `equipo5proyfin` y ejecuta:
+
+```
+\c asilo_db equipo5proyfin
+\encoding UTF8
+\i 'C:/Users/52812/OneDrive/Escritorio/ITC/BaseDatos/proyectoFinalBDA/DDL.sql'
+\i 'C:/Users/52812/OneDrive/Escritorio/ITC/BaseDatos/proyectoFinalBDA/PROCEDURES.sql'
+\i 'C:/Users/52812/OneDrive/Escritorio/ITC/BaseDatos/proyectoFinalBDA/VIEWS_TRIGGERS.sql'
+\i 'C:/Users/52812/OneDrive/Escritorio/ITC/BaseDatos/proyectoFinalBDA/SEED.sql'
+```
+
+> **`\encoding UTF8` es obligatorio** — sin él SQL Shell lee los archivos en Windows-1252
+> y falla con caracteres especiales en los comentarios.
+
+### Opción B — Desde CMD/terminal con psql en PATH
 
 ```
 psql -U equipo5proyfin -d asilo_db -f DDL.sql
@@ -88,11 +104,6 @@ psql -U equipo5proyfin -d asilo_db -f SEED.sql
 ```
 
 Contraseña cuando la pida: `123`
-
-Si psql pide contraseña pero no abre prompt, agrega `-W`:
-```
-psql -U equipo5proyfin -d asilo_db -W -f DDL.sql
-```
 
 ---
 

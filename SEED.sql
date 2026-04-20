@@ -18,7 +18,7 @@ INSERT INTO rol (nombre_rol, nivel_acceso) VALUES
 INSERT INTO ala (nombre, piso, descripcion) VALUES
 ('Ala A — Demencia',    1, 'Residentes con demencia y deterioro cognitivo severo'),
 ('Ala B — Ambulatorio', 1, 'Residentes con movilidad autonoma o asistida'),
-('Patio y Jardin',      0, 'Area exterior del asilo');
+('Patio y Jardin',      1, 'Area exterior del asilo');
 
 INSERT INTO sala (nombre, id_ala, capacidad) VALUES
 ('Sala de Terapia 1',  1, 3),
@@ -181,7 +181,7 @@ INSERT INTO horario_medicamento (id_residente, id_medicamento, hora_programada, 
 (2, 1, '08:00', '50mg',   'Diaria'),      -- id 1 — Carmen: Sertralina
 (2, 4, '08:00', '20mg',   'Diaria'),      -- id 2 — Carmen: Omeprazol
 (1, 3, '09:00', '10mg',   'Diaria'),      -- id 3 — Roberto: Memantina
-(3, 5, '08:30', '1000UI', 'Diaria'),      -- id 4 — Luis: Vitamina D3  ← usado en Escenario 3
+(3, 5, '08:30', '1000UI', 'Diaria'),      -- id 4 — Luis: Vitamina D3 (usado en Escenario 3)
 (3, 2, '22:00', '1mg',    'Condicional'), -- id 5 — Luis: Lorazepam noche
 (4, 3, '09:00', '10mg',   'Diaria');      -- id 6 — Elena: Memantina
 
